@@ -1,0 +1,10 @@
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\obj\Debug\TemplateEngine.csprojResolveAssemblyReference.cache
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\TemplateEngine.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\TemplateEngine.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\obj\Debug\TemplateEngine.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\obj\Debug\TemplateEngine.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\EntityFramework.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\EntityFramework.xml
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\TemplateEngine.dll.config
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\EntityFramework.SqlServer.xml

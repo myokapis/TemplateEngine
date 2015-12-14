@@ -6,9 +6,9 @@ using System.Text;
 
 namespace TemplateEngine
 {
-
   public partial class Template
   {
+    List<string> _trueValues = new List<string>() { "Yes", "Y", "T", "True" };
 
     #region "refactored constructors"
 
@@ -63,14 +63,40 @@ namespace TemplateEngine
 
 
 
-    public void setSectionFields<T>(IEnumerable<T> data)
+    public void setSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions=null)
     {
+      FieldDefinitions definitions = (fieldDefinitions != null) ? fieldDefinitions : new FieldDefinitions();
+
       foreach (T row in data)
       {
         ViewModelAccessor<T> accessor = new ViewModelAccessor<T>(row);
+
         foreach (KeyValuePair<string, string> kvp in accessor.FieldValues)
         {
-          setField(kvp.Key, kvp.Value);
+          if (definitions.Checkboxes.Contains(kvp.Key))
+          {
+            string checkedValue = (_trueValues.Contains(kvp.Value)) ? "checked='checked'" : "";
+            setField(kvp.Key, checkedValue);
+          }
+          else if (definitions.DropdownFieldNames.Contains(kvp.Key))
+          {
+            DropdownDefinition definition = definitions.Dropdowns.Where<DropdownDefinition>(d => d.FieldName == kvp.Key).FirstOrDefault<DropdownDefinition>();
+            tpl.selectSection(definition.SectionName.ToUpper());
+
+            foreach(Option item in definition.Data)
+            {
+              tpl.setField("TEXT", item.Text);
+              tpl.setField("VALUE", item.Value);
+              tpl.setField("SELECTED", (item.Value == kvp.Value) ? "selected='selected'" : "");
+              tpl.appendSection();
+            }
+
+            tpl.deselectSection();
+          }
+          else
+          {
+            setField(kvp.Key, kvp.Value);
+          }
         }
 
         appendSection();

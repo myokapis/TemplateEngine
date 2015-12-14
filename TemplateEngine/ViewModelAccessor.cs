@@ -32,7 +32,8 @@ namespace TemplateEngine
       {
         foreach (PropertyInfo pi in FieldProperties)
         {
-          yield return new KeyValuePair<string, string>(pi.Name, pi.GetValue(_model, _indexes).ToString());
+          object value = pi.GetValue(_model, _indexes);
+          yield return new KeyValuePair<string, string>(pi.Name, (value == null) ? "" : value.ToString());
         }
       }
     }

@@ -8,3 +8,11 @@ C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngi
 C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\TemplateEngine.dll.config
 C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\EntityFramework.SqlServer.dll
 C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\CAMSComponents.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\CAMSDataAccess.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\AutoMapper.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\System.Runtime.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\CAMSComponents.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\CAMSDataAccess.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\AutoMapper.xml
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine\bin\Debug\System.Runtime.xml

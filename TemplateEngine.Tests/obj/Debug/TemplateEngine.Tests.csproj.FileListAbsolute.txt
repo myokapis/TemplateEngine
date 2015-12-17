@@ -9,3 +9,11 @@ C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngi
 C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\EntityFramework.xml
 C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\obj\Debug\TemplateEngine.Tests.dll
 C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\obj\Debug\TemplateEngine.Tests.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\CAMSComponents.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\CAMSDataAccess.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\AutoMapper.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\System.Runtime.dll
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\CAMSComponents.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\CAMSDataAccess.pdb
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\AutoMapper.xml
+C:\Users\geneg\Documents\Visual Studio 2012\Projects\TemplateEngine\TemplateEngine.Tests\bin\Debug\System.Runtime.xml

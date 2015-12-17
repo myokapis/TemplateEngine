@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using CAMSComponents;
 using TemplateEngine;
 
 namespace TemplateEngine.Tests

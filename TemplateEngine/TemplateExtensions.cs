@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using CAMSComponents;
 
 namespace TemplateEngine
 {
@@ -62,9 +61,22 @@ namespace TemplateEngine
     //}
 
 
+    public void setOptionFields(string sectionName, IEnumerable<Option> data, string selectedValue = "")
+    {
+      tpl.selectSection(sectionName.ToUpper());
 
+      foreach (Option option in data)
+      {
+        tpl.setField("TEXT", option.Text);
+        tpl.setField("VALUE", option.Value);
+        tpl.setField("SELECTED", (option.Value == selectedValue) ? "selected='selected'" : "");
+        tpl.appendSection();
+      }
 
-    public void setSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions=null)
+      tpl.deselectSection();
+    }
+
+    public void setSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions=null, bool AppendSection=true)
     {
       FieldDefinitions definitions = (fieldDefinitions != null) ? fieldDefinitions : new FieldDefinitions();
 
@@ -82,17 +94,18 @@ namespace TemplateEngine
           else if (definitions.DropdownFieldNames.Contains(kvp.Key))
           {
             DropdownDefinition definition = definitions.Dropdowns.Where<DropdownDefinition>(d => d.FieldName == kvp.Key).FirstOrDefault<DropdownDefinition>();
-            tpl.selectSection(definition.SectionName.ToUpper());
+            setOptionFields(definition.SectionName, definition.Data, kvp.Value);
+            //tpl.selectSection(definition.SectionName.ToUpper());
 
-            foreach(Option item in definition.Data)
-            {
-              tpl.setField("TEXT", item.Text);
-              tpl.setField("VALUE", item.Value);
-              tpl.setField("SELECTED", (item.Value == kvp.Value) ? "selected='selected'" : "");
-              tpl.appendSection();
-            }
+            //foreach(Option item in definition.Data)
+            //{
+            //  tpl.setField("TEXT", item.Text);
+            //  tpl.setField("VALUE", item.Value);
+            //  tpl.setField("SELECTED", (item.Value == kvp.Value) ? "selected='selected'" : "");
+            //  tpl.appendSection();
+            //}
 
-            tpl.deselectSection();
+            //tpl.deselectSection();
           }
           else
           {
@@ -100,7 +113,34 @@ namespace TemplateEngine
           }
         }
 
-        appendSection();
+        if (AppendSection) appendSection();
+      }
+    }
+
+    public void setSectionFields<T>(T data, FieldDefinitions fieldDefinitions = null, bool AppendSection = true)
+    {
+      FieldDefinitions definitions = (fieldDefinitions != null) ? fieldDefinitions : new FieldDefinitions();
+
+        ViewModelAccessor<T> accessor = new ViewModelAccessor<T>(data);
+
+        foreach (KeyValuePair<string, string> kvp in accessor.FieldValues)
+        {
+          if (definitions.Checkboxes.Contains(kvp.Key))
+          {
+            string checkedValue = (_trueValues.Contains(kvp.Value)) ? "checked='checked'" : "";
+            setField(kvp.Key, checkedValue);
+          }
+          else if (definitions.DropdownFieldNames.Contains(kvp.Key))
+          {
+            DropdownDefinition definition = definitions.Dropdowns.Where<DropdownDefinition>(d => d.FieldName == kvp.Key).FirstOrDefault<DropdownDefinition>();
+            setOptionFields(definition.SectionName, definition.Data, kvp.Value);
+          }
+          else
+          {
+            setField(kvp.Key, kvp.Value);
+          }
+
+        if (AppendSection) appendSection();
       }
     }
 

@@ -25,7 +25,7 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Niels Wojciech Tadeusz Andersen haj@zhat.dk.  All rights reserved.")]
 [assembly: AssemblyVersion("2.0.3")]
 
-namespace TemplateEngine { // Namespace begins
+namespace TemplateEngine.Obsolete { // Namespace begins
 
 using System;
 using System.IO;
@@ -405,10 +405,10 @@ public partial class Template
 				sb.Append(currNode.val.val);
 			}
 			for (node n=currSection.tpl.addedHead.next; n!=null; n=n.next)
-				sb.Append(n.val.val);			
+                    sb.Append(n.val.val);			
 		}
 		while ((currNode = currNode.next) != null)
-				sb.Append(currNode.val.val);
+                sb.Append(currNode.val.val);
 		return sb.ToString();
 	}
 

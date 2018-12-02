@@ -5,68 +5,46 @@ using System.Text;
 
 namespace TemplateEngine
 {
-  public class FieldDefinitions
-  {
-    private List<string> _checkboxes = new List<string>();
-    private List<DropdownDefinition> _dropdowns = new List<DropdownDefinition>();
-    private List<string> _dropdownFieldNames = new List<string>();
-
-    public FieldDefinitions() { }
-
-    public FieldDefinitions(List<string> checkboxes, List<DropdownDefinition> dropdowns)
+    public class FieldDefinitions
     {
-      _checkboxes = (checkboxes == null) ? new List<string>() : checkboxes;
-      _dropdowns = (dropdowns == null) ? new List<DropdownDefinition>() : dropdowns;
-      _dropdownFieldNames = dropdowns.Select<DropdownDefinition, string>(d => d.FieldName).ToList<string>();
+        private Dictionary<string, DropdownDefinition> dropdownDefinitions = new Dictionary<string, DropdownDefinition>();
+
+        public FieldDefinitions() { }
+
+        public FieldDefinitions(IEnumerable<string> checkboxes, IEnumerable<DropdownDefinition> dropdowns)
+        {
+            if (checkboxes != null) Checkboxes = checkboxes.ToArray();
+            if (dropdowns != null) dropdownDefinitions = dropdowns.ToDictionary(d => d.FieldName, d => d);
+        }
+
+        public IEnumerable<string> Checkboxes { get; private set; } = new string[0];
+
+        public IEnumerable<DropdownDefinition> Dropdowns => this.dropdownDefinitions.Values;
+
+        public IEnumerable<string> DropdownFieldNames => this.dropdownDefinitions.Keys;
+
+        public void SetCheckboxes(params string[] fieldNames)
+        {
+            Checkboxes = fieldNames;
+        }
+
+        public void SetDropdowns(params DropdownDefinition[] dropdowns)
+        {
+            dropdownDefinitions = dropdowns.ToDictionary(d => d.FieldName, d => d);
+        }
+
     }
 
-    public List<string> Checkboxes
+    public struct DropdownDefinition
     {
-      get
-      {
-        return _checkboxes;
-      }
+        public List<Option> Data { get; set; }
+        public string FieldName { get; set; }
+        public string SectionName { get; set; }
     }
 
-    public List<DropdownDefinition> Dropdowns
+    public class Option
     {
-      get
-      {
-        return _dropdowns;
-      }
+        public string Text { get; set; }
+        public string Value { get; set; }
     }
-
-    public List<string> DropdownFieldNames
-    {
-      get
-      {
-        return _dropdownFieldNames;
-      }
-    }
-
-    public void SetCheckboxes(params string[] fieldNames)
-    {
-        _checkboxes = fieldNames.ToList<string>();
-    }
-
-    public void SetDropdowns(params DropdownDefinition[] dropdowns)
-    {
-      _dropdowns = dropdowns.ToList<DropdownDefinition>();
-      _dropdownFieldNames = dropdowns.Select<DropdownDefinition, string>(d => d.FieldName).ToList<string>();
-    }
-
-  }
-
-  public struct DropdownDefinition
-  {
-    public List<Option> Data { get; set; }
-    public string FieldName { get; set; }
-    public string SectionName { get; set; }
-  }
-
-  public class Option
-  {
-    public string Text { get; set; }
-    public string Value { get; set; }
-  }
 }

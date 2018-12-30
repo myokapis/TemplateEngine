@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FieldDefinitions.cs" />
+    <Compile Include="TemplateLoader.cs" />
     <Compile Include="FormatAttribute.cs" />
     <Compile Include="ITemplate.cs" />
     <Compile Include="ITemplateWriter.cs" />

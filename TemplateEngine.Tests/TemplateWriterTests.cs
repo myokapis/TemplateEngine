@@ -1,10 +1,23 @@
-﻿using System;
+﻿/* ****************************************************************************
+Copyright 2018 Gene Graves
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**************************************************************************** */
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using FluentAssertions;
 using Xunit;
-using TemplateEngine;
 
 namespace TemplateEngine.Tests
 {
@@ -540,16 +553,16 @@ namespace TemplateEngine.Tests
         {
             // create a template and writer for the test
             var tpl = new Template(this.templateTexts[3]);
-            var parentWriter = new TemplateWriter(tpl);
-            parentWriter.SelectSection("SECTION1");
+            var writer = new TemplateWriter(tpl);
+            writer.SelectSection("SECTION1");
 
             var t = new List<string>() { "A", "B", "C" };
 
             // append a date field and get the content
-            parentWriter.SetField("Field1", t);
-            parentWriter.AppendSection(true);
-            parentWriter.AppendSection();
-            var content = parentWriter.GetContent();
+            writer.SetField("Field1", t);
+            writer.AppendSection(true);
+            writer.AppendSection();
+            var content = writer.GetContent();
 
             var expected = string.Concat(
                 $"-->{t.ToString()}<--\r\n",
@@ -565,55 +578,521 @@ namespace TemplateEngine.Tests
         [Fact]
         public void TestSetOptionFields()
         {
+            // create a template and writer for the test
+            var tpl = new Template(this.templateTexts[2]);
+            var writer = new TemplateWriter(tpl);
+            writer.SelectSection("SECTION3");
 
+            // setup option data
+            var data = new List<Option>
+            {
+                new Option() { Text = "Text 1", Value = "1" },
+                new Option() { Text = "Text 2", Value = "2" },
+                new Option() { Text = "Text 3", Value = "3" },
+                new Option() { Text = "Text 4", Value = "4" }
+            };
+
+            // set option field in the template and get the content
+            writer.SetOptionFields("OPTION_SECTION1", data, "3");
+            writer.AppendAll();
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "  section 3 text\r\n",
+                "  Field3: \r\n",
+                "  Field4: \r\n",
+                "  Text 1;1;Text 2;2;Text 3;3;selected='selected'Text 4;4;\r\n",
+                "  Checkbox1: \r\n",
+                "  Checkbox2: \r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_EnumerableWithName()
+        public void TestSetMultiSectionFields_WithName()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[3]);
+            var writer = new TemplateWriter(tpl);
 
+            // setup data
+            var data = new List<Data>
+            {
+                new Data("value 1-1", "value 2-1", "value 3-1", "value 4-1", "value 5-1", "value 6-1"),
+                new Data("value 1-2", "value 2-2", "value 3-2", "value 4-2", "value 5-2", "value 6-2"),
+                new Data("value 1-3", "value 2-3", "value 3-3", "value 4-3", "value 5-3", "value 6-3"),
+                new Data("value 1-4", "value 2-4", "value 3-4", "value 4-4", "value 5-4", "value 6-4"),
+            };
+
+            // set a section for each row of data
+            writer.SetMultiSectionFields<Data>("SECTION1", data);
+            writer.AppendAll();
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "-->value 1-1<--\r\n",
+                "-->value 2-1<--\r\n",
+                "-->value 3-1<--\r\n",
+                "-->value 4-1<--\r\n",
+                "-->value 5-1<--\r\n",
+                "-->value 6-1<--\r\n",
+                "-->value 1-2<--\r\n",
+                "-->value 2-2<--\r\n",
+                "-->value 3-2<--\r\n",
+                "-->value 4-2<--\r\n",
+                "-->value 5-2<--\r\n",
+                "-->value 6-2<--\r\n",
+                "-->value 1-3<--\r\n",
+                "-->value 2-3<--\r\n",
+                "-->value 3-3<--\r\n",
+                "-->value 4-3<--\r\n",
+                "-->value 5-3<--\r\n",
+                "-->value 6-3<--\r\n",
+                "-->value 1-4<--\r\n",
+                "-->value 2-4<--\r\n",
+                "-->value 3-4<--\r\n",
+                "-->value 4-4<--\r\n",
+                "-->value 5-4<--\r\n",
+                "-->value 6-4<--\r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_EnumerableWithNameDefinitions()
+        public void TestSetMultiSectionFields_WithNameDefinitions()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[2]);
+            var writer = new TemplateWriter(tpl);
 
+            // setup data
+            var data = new List<Data>
+            {
+                new Data("1", "Val4", "value 3-1", "value 4-1", "true", "false"),
+                new Data("2", "Val3", "value 3-2", "value 4-2", "0", "1"),
+                new Data("3", "Val2", "value 3-3", "value 4-3", "T", "F"),
+                new Data("4", "Val1", "value 3-4", "value 4-4", "f", "t"),
+            };
+
+            // setup dropdowns
+            var dd = new List<DropdownDefinition>
+            {
+                new DropdownDefinition("OPTION_SECTION1", "Field1", new List<Option>()
+                {
+                    new Option() { Text = "Text 1", Value = "1" },
+                    new Option() { Text = "Text 2", Value = "2" },
+                    new Option() { Text = "Text 3", Value = "3" },
+                    new Option() { Text = "Text 4", Value = "4" }
+                }),
+                new DropdownDefinition("OPTION_SECTION2", "Field2", new List<Option>()
+                {
+                    new Option() { Text = "Name 1", Value = "Val1" },
+                    new Option() { Text = "Name 2", Value = "Val2" },
+                    new Option() { Text = "Name 3", Value = "Val3" },
+                    new Option() { Text = "Name 4", Value = "Val4" }
+                })
+            };
+
+            // setup field definitions
+            var definitions = new FieldDefinitions(new List<string> { "Field5", "Field6" }, dd);
+
+            // set a section for each row of data
+            writer.SetMultiSectionFields<Data>("SECTION3", data, definitions);
+            writer.AppendAll();
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "  section 3 text\r\n",
+                "  Field3: value 3-1\r\n",
+                "  Field4: value 4-1\r\n",
+                "  Text 1;1;selected='selected'Text 2;2;Text 3;3;Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;Name 3;Val3;Name 4;Val4;selected='selected'\r\n",
+                "  Checkbox1: checked='checked'\r\n",
+                "  Checkbox2: \r\n",
+                "  section 3 text\r\n",
+                "  Field3: value 3-2\r\n",
+                "  Field4: value 4-2\r\n",
+                "  Text 1;1;Text 2;2;selected='selected'Text 3;3;Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;Name 3;Val3;selected='selected'Name 4;Val4;\r\n",
+                "  Checkbox1: \r\n",
+                "  Checkbox2: checked='checked'\r\n",
+                "  section 3 text\r\n",
+                "  Field3: value 3-3\r\n",
+                "  Field4: value 4-3\r\n",
+                "  Text 1;1;Text 2;2;Text 3;3;selected='selected'Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;selected='selected'Name 3;Val3;Name 4;Val4;\r\n",
+                "  Checkbox1: checked='checked'\r\n",
+                "  Checkbox2: \r\n",
+                "  section 3 text\r\n",
+                "  Field3: value 3-4\r\n",
+                "  Field4: value 4-4\r\n",
+                "  Text 1;1;Text 2;2;Text 3;3;Text 4;4;selected='selected'\r\n",
+                "  Name 1;Val1;selected='selected'Name 2;Val2;Name 3;Val3;Name 4;Val4;\r\n",
+                "  Checkbox1: \r\n",
+                "  Checkbox2: checked='checked'\r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_EnumerableWithNameDefinitionsOptions()
+        public void TestSetMultiSectionFields_WithDefinitions()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[2]);
+            var writer = new TemplateWriter(tpl);
 
+            // setup data
+            var data = new List<Data>
+            {
+                new Data("1", "Val4", "value 3-1", "value 4-1", "true", "false"),
+                new Data("2", "Val3", "value 3-2", "value 4-2", "0", "1"),
+                new Data("3", "Val2", "value 3-3", "value 4-3", "T", "F"),
+                new Data("4", "Val1", "value 3-4", "value 4-4", "f", "t"),
+            };
+
+            // setup dropdowns
+            var dd = new List<DropdownDefinition>
+            {
+                new DropdownDefinition("OPTION_SECTION1", "Field1", new List<Option>()
+                {
+                    new Option() { Text = "Text 1", Value = "1" },
+                    new Option() { Text = "Text 2", Value = "2" },
+                    new Option() { Text = "Text 3", Value = "3" },
+                    new Option() { Text = "Text 4", Value = "4" }
+                }),
+                new DropdownDefinition("OPTION_SECTION2", "Field2", new List<Option>()
+                {
+                    new Option() { Text = "Name 1", Value = "Val1" },
+                    new Option() { Text = "Name 2", Value = "Val2" },
+                    new Option() { Text = "Name 3", Value = "Val3" },
+                    new Option() { Text = "Name 4", Value = "Val4" }
+                })
+            };
+
+            // setup field definitions
+            var definitions = new FieldDefinitions(new List<string> { "Field5", "Field6" }, dd);
+
+            // set a section for each row of data
+            writer.SelectSection("SECTION3");
+            writer.SetMultiSectionFields<Data>(data, definitions);
+            writer.AppendAll();
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "  section 3 text\r\n",
+                "  Field3: value 3-1\r\n",
+                "  Field4: value 4-1\r\n",
+                "  Text 1;1;selected='selected'Text 2;2;Text 3;3;Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;Name 3;Val3;Name 4;Val4;selected='selected'\r\n",
+                "  Checkbox1: checked='checked'\r\n",
+                "  Checkbox2: \r\n",
+                "  section 3 text\r\n",
+                "  Field3: value 3-2\r\n",
+                "  Field4: value 4-2\r\n",
+                "  Text 1;1;Text 2;2;selected='selected'Text 3;3;Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;Name 3;Val3;selected='selected'Name 4;Val4;\r\n",
+                "  Checkbox1: \r\n",
+                "  Checkbox2: checked='checked'\r\n",
+                "  section 3 text\r\n",
+                "  Field3: value 3-3\r\n",
+                "  Field4: value 4-3\r\n",
+                "  Text 1;1;Text 2;2;Text 3;3;selected='selected'Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;selected='selected'Name 3;Val3;Name 4;Val4;\r\n",
+                "  Checkbox1: checked='checked'\r\n",
+                "  Checkbox2: \r\n",
+                "  section 3 text\r\n",
+                "  Field3: value 3-4\r\n",
+                "  Field4: value 4-4\r\n",
+                "  Text 1;1;Text 2;2;Text 3;3;Text 4;4;selected='selected'\r\n",
+                "  Name 1;Val1;selected='selected'Name 2;Val2;Name 3;Val3;Name 4;Val4;\r\n",
+                "  Checkbox1: \r\n",
+                "  Checkbox2: checked='checked'\r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_EnumerableWithDefinitionsOptions()
+        public void TestSetSectionFields_WithName()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[3]);
+            var writer = new TemplateWriter(tpl);
 
+            // setup data
+            var data = new Data("value 1-1", "value 2-1", "value 3-1", "value 4-1", "value 5-1", "value 6-1");
+
+            // set a section for the row of data
+            writer.SetSectionFields<Data>("SECTION1", data);
+            writer.AppendAll();
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "-->value 1-1<--\r\n",
+                "-->value 2-1<--\r\n",
+                "-->value 3-1<--\r\n",
+                "-->value 4-1<--\r\n",
+                "-->value 5-1<--\r\n",
+                "-->value 6-1<--\r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_POCOWithName()
+        public void TestSetSectionFields_WithNameDefinitions()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[2]);
+            var writer = new TemplateWriter(tpl);
 
+            // setup data
+            var data = new Data("1", "Val4", "value 3-1", "value 4-1", "true", "false");
+
+            // setup dropdowns
+            var dd = new List<DropdownDefinition>
+            {
+                new DropdownDefinition("OPTION_SECTION1", "Field1", new List<Option>()
+                {
+                    new Option() { Text = "Text 1", Value = "1" },
+                    new Option() { Text = "Text 2", Value = "2" },
+                    new Option() { Text = "Text 3", Value = "3" },
+                    new Option() { Text = "Text 4", Value = "4" }
+                }),
+                new DropdownDefinition("OPTION_SECTION2", "Field2", new List<Option>()
+                {
+                    new Option() { Text = "Name 1", Value = "Val1" },
+                    new Option() { Text = "Name 2", Value = "Val2" },
+                    new Option() { Text = "Name 3", Value = "Val3" },
+                    new Option() { Text = "Name 4", Value = "Val4" }
+                })
+            };
+
+            // setup field definitions
+            var definitions = new FieldDefinitions(new List<string> { "Field5", "Field6" }, dd);
+
+            // set a section for the row of data
+            writer.SetSectionFields<Data>("SECTION3", data, definitions);
+            writer.AppendAll();
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "  section 3 text\r\n",
+                "  Field3: value 3-1\r\n",
+                "  Field4: value 4-1\r\n",
+                "  Text 1;1;selected='selected'Text 2;2;Text 3;3;Text 4;4;\r\n",
+                "  Name 1;Val1;Name 2;Val2;Name 3;Val3;Name 4;Val4;selected='selected'\r\n",
+                "  Checkbox1: checked='checked'\r\n",
+                "  Checkbox2: \r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_POCOWithNameDefinitions()
+        public void TestSetSectionFields_WithNameDefinitionsOptions()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[2]);
+            var writer = new TemplateWriter(tpl);
 
+            // setup data
+            var data = new List<Data>
+            {
+                new Data("1", "Val4", "value 3-1", "value 4-1", "true", "false"),
+                new Data("2", "Val3", "value 3-2", "value 4-2", "0", "1"),
+                new Data("3", "Val2", "value 3-3", "value 4-3", "T", "F"),
+                new Data("4", "Val1", "value 3-4", "value 4-4", "f", "t"),
+            };
+
+            // setup dropdowns
+            var dd = new List<DropdownDefinition>
+            {
+                new DropdownDefinition("OPTION_SECTION1", "Field1", new List<Option>()
+                {
+                    new Option() { Text = "Text 1", Value = "1" },
+                    new Option() { Text = "Text 2", Value = "2" },
+                    new Option() { Text = "Text 3", Value = "3" },
+                    new Option() { Text = "Text 4", Value = "4" }
+                }),
+                new DropdownDefinition("OPTION_SECTION2", "Field2", new List<Option>()
+                {
+                    new Option() { Text = "Name 1", Value = "Val1" },
+                    new Option() { Text = "Name 2", Value = "Val2" },
+                    new Option() { Text = "Name 3", Value = "Val3" },
+                    new Option() { Text = "Name 4", Value = "Val4" }
+                })
+            };
+
+            // setup field definitions
+            var definitions = new FieldDefinitions(new List<string> { "Field5", "Field6" }, dd);
+
+            var content = new List<string>();
+
+            // set a section for the row of data using AppendDeselect option
+            writer.SetSectionFields<Data>("SECTION3", data[0], SectionOptions.AppendDeselect, definitions);
+            writer.AppendAll();
+            content.Add(writer.GetContent());
+            writer.Clear();
+
+            // set a section for the row of data using Append option
+            writer.SetSectionFields<Data>("SECTION3", data[1], SectionOptions.AppendOnly, definitions);
+            writer.DeselectSection();
+            writer.AppendAll();
+            content.Add(writer.GetContent());
+            writer.Clear();
+
+            // set a section for the row of data using Set option
+            writer.SetSectionFields<Data>("SECTION3", data[2], SectionOptions.Set, definitions);
+            writer.AppendSection();
+            writer.DeselectSection();
+            writer.AppendAll();
+            content.Add(writer.GetContent());
+
+            var expected = new List<string>
+            {
+                new List<string>
+                {
+                    "  section 3 text\r\n",
+                    "  Field3: value 3-1\r\n",
+                    "  Field4: value 4-1\r\n",
+                    "  Text 1;1;selected='selected'Text 2;2;Text 3;3;Text 4;4;\r\n",
+                    "  Name 1;Val1;Name 2;Val2;Name 3;Val3;Name 4;Val4;selected='selected'\r\n",
+                    "  Checkbox1: checked='checked'\r\n",
+                    "  Checkbox2: \r\n"
+                }.Concat(),
+                new List<string>
+                {
+                    "  section 3 text\r\n",
+                    "  Field3: value 3-2\r\n",
+                    "  Field4: value 4-2\r\n",
+                    "  Text 1;1;Text 2;2;selected='selected'Text 3;3;Text 4;4;\r\n",
+                    "  Name 1;Val1;Name 2;Val2;Name 3;Val3;selected='selected'Name 4;Val4;\r\n",
+                    "  Checkbox1: \r\n",
+                    "  Checkbox2: checked='checked'\r\n"
+                }.Concat(),
+                new List<string>
+                {
+                    "  section 3 text\r\n",
+                    "  Field3: value 3-3\r\n",
+                    "  Field4: value 4-3\r\n",
+                    "  Text 1;1;Text 2;2;Text 3;3;selected='selected'Text 4;4;\r\n",
+                    "  Name 1;Val1;Name 2;Val2;selected='selected'Name 3;Val3;Name 4;Val4;\r\n",
+                    "  Checkbox1: checked='checked'\r\n",
+                    "  Checkbox2: \r\n"
+                }.Concat()
+            };
+
+            content.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
-        public void TestSetSectionFields_POCOWithNameDefinitionsOptions()
+        public void TestSetSectionFields_WithDefinitionsOptions()
         {
+            // setup a template and writer
+            var tpl = new Template(templateTexts[2]);
+            var writer = new TemplateWriter(tpl);
 
-        }
+            // setup data
+            var data = new List<Data>
+            {
+                new Data("1", "Val4", "value 3-1", "value 4-1", "true", "false"),
+                new Data("2", "Val3", "value 3-2", "value 4-2", "0", "1"),
+                new Data("3", "Val2", "value 3-3", "value 4-3", "T", "F"),
+                new Data("4", "Val1", "value 3-4", "value 4-4", "f", "t"),
+            };
 
-        [Fact]
-        public void TestSetSectionFields_POCOWithDefinitionsOptions()
-        {
+            // setup dropdowns
+            var dd = new List<DropdownDefinition>
+            {
+                new DropdownDefinition("OPTION_SECTION1", "Field1", new List<Option>()
+                {
+                    new Option() { Text = "Text 1", Value = "1" },
+                    new Option() { Text = "Text 2", Value = "2" },
+                    new Option() { Text = "Text 3", Value = "3" },
+                    new Option() { Text = "Text 4", Value = "4" }
+                }),
+                new DropdownDefinition("OPTION_SECTION2", "Field2", new List<Option>()
+                {
+                    new Option() { Text = "Name 1", Value = "Val1" },
+                    new Option() { Text = "Name 2", Value = "Val2" },
+                    new Option() { Text = "Name 3", Value = "Val3" },
+                    new Option() { Text = "Name 4", Value = "Val4" }
+                })
+            };
 
+            // setup field definitions
+            var definitions = new FieldDefinitions(new List<string> { "Field5", "Field6" }, dd);
+
+            var content = new List<string>();
+
+            // set a section for the row of data using AppendDeselect option
+            writer.SelectSection("SECTION3");
+            writer.SetSectionFields<Data>(data[0], SectionOptions.AppendDeselect, definitions);
+            writer.AppendAll();
+            content.Add(writer.GetContent());
+            writer.Clear();
+
+            // set a section for the row of data using Append option
+            writer.SelectSection("SECTION3");
+            writer.SetSectionFields<Data>(data[1], SectionOptions.AppendOnly, definitions);
+            writer.DeselectSection();
+            writer.AppendAll();
+            content.Add(writer.GetContent());
+            writer.Clear();
+
+            // set a section for the row of data using Set option
+            writer.SelectSection("SECTION3");
+            writer.SetSectionFields<Data>(data[2], SectionOptions.Set, definitions);
+            writer.AppendSection();
+            writer.DeselectSection();
+            writer.AppendAll();
+            content.Add(writer.GetContent());
+
+            var expected = new List<string>
+            {
+                new List<string>
+                {
+                    "  section 3 text\r\n",
+                    "  Field3: value 3-1\r\n",
+                    "  Field4: value 4-1\r\n",
+                    "  Text 1;1;selected='selected'Text 2;2;Text 3;3;Text 4;4;\r\n",
+                    "  Name 1;Val1;Name 2;Val2;Name 3;Val3;Name 4;Val4;selected='selected'\r\n",
+                    "  Checkbox1: checked='checked'\r\n",
+                    "  Checkbox2: \r\n"
+                }.Concat(),
+                new List<string>
+                {
+                    "  section 3 text\r\n",
+                    "  Field3: value 3-2\r\n",
+                    "  Field4: value 4-2\r\n",
+                    "  Text 1;1;Text 2;2;selected='selected'Text 3;3;Text 4;4;\r\n",
+                    "  Name 1;Val1;Name 2;Val2;Name 3;Val3;selected='selected'Name 4;Val4;\r\n",
+                    "  Checkbox1: \r\n",
+                    "  Checkbox2: checked='checked'\r\n"
+                }.Concat(),
+                new List<string>
+                {
+                    "  section 3 text\r\n",
+                    "  Field3: value 3-3\r\n",
+                    "  Field4: value 4-3\r\n",
+                    "  Text 1;1;Text 2;2;Text 3;3;selected='selected'Text 4;4;\r\n",
+                    "  Name 1;Val1;Name 2;Val2;selected='selected'Name 3;Val3;Name 4;Val4;\r\n",
+                    "  Checkbox1: checked='checked'\r\n",
+                    "  Checkbox2: \r\n"
+                }.Concat()
+            };
+
+            content.Should().BeEquivalentTo(expected);
         }
 
         #region Helper Methods
@@ -659,13 +1138,13 @@ namespace TemplateEngine.Tests
                 "<!-- @@SECTION1@@ -->\r\n",
                 "<!-- @@SECTION3@@ -->",
                 "  section 3 text\r\n",
+                "  Field3: @@Field3@@\r\n",
+                "  Field4: @@Field4@@\r\n",
                 "  <!-- @@OPTION_SECTION1@@ -->@@TEXT@@;@@VALUE@@;@@SELECTED@@<!-- @@OPTION_SECTION1@@ -->\r\n",
                 "  <!-- @@OPTION_SECTION2@@ -->@@TEXT@@;@@VALUE@@;@@SELECTED@@<!-- @@OPTION_SECTION2@@ -->\r\n",
-                "<!-- @@SECTION3@@ -->",
-                "<!-- @@SECTION4@@ -->\r\n",
-                "  Checkbox1: @@Checkbox1@@\r\n",
-                "  Checkbox2: @@Checkbox2@@\r\n",
-                "<!-- @@SECTION4@@ -->"
+                "  Checkbox1: @@Field5@@\r\n",
+                "  Checkbox2: @@Field6@@\r\n",
+                "<!-- @@SECTION3@@ -->"
             }.Concat(),
             new List<string>
             {
@@ -697,6 +1176,26 @@ namespace TemplateEngine.Tests
         };
 
         #endregion
+
+        private class Data
+        {
+            public Data(string field1, string field2, string field3, string field4, string field5, string field6)
+            {
+                this.Field1 = field1;
+                this.Field2 = field2;
+                this.Field3 = field3;
+                this.Field4 = field4;
+                this.Field5 = field5;
+                this.Field6 = field6;
+            }
+
+            public string Field1 { get; set; }
+            public string Field2 { get; set; }
+            public string Field3 { get; set; }
+            public string Field4 { get; set; }
+            public string Field5 { get; set; }
+            public string Field6 { get; set; }
+        }
 
     }
 

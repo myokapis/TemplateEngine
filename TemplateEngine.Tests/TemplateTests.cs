@@ -1,4 +1,20 @@
-﻿using System;
+﻿/* ****************************************************************************
+Copyright 2018 Gene Graves
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**************************************************************************** */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -175,7 +191,6 @@ namespace TemplateEngine.Tests
                 b.ReferenceName
             }));
 
-            //actual.Should().BeEquivalentTo(this.textBlocks);
             actual.Should().BeEquivalentTo(expected);
         }
 
@@ -242,14 +257,14 @@ namespace TemplateEngine.Tests
 
         private Dictionary<string, int> rawLength = new Dictionary<string, int>()
         {
-            { "@MAIN", 2876 },
-            { "HEAD", 132 },
-            { "BODY", 2655 },
-            { "ROW", 345 },
-            { "EDITOR", 1609 },
-            { "TRANSACTION_TYPE", 57 },
-            { "EDITOR_ROWS", 287 },
-            { "BUDGET_LINES", 57 }
+            { "@MAIN", 2875 },
+            { "HEAD", 131 },
+            { "BODY", 2654 },
+            { "ROW", 325 },
+            { "EDITOR", 1601 },
+            { "TRANSACTION_TYPE", 56 },
+            { "EDITOR_ROWS", 271 },
+            { "BUDGET_LINES", 56 }
         };
 
         private List<string> sectionNames = new List<string>()
@@ -262,9 +277,13 @@ namespace TemplateEngine.Tests
             { "@MAIN", new List<TextBlock>()
                 {
                     new TextBlock(TextBlockType.Text, "Line Before\r\n"),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION1", "<!-- @@SECTION1@@ -->\r\n"),
+                    new TextBlock(TextBlockType.Prefix, null, "SECTION1", ""),
+                    new TextBlock(TextBlockType.SectionTag, null, "SECTION1", "<!-- @@SECTION1@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, null, "SECTION1", "\r\n"),
                     new TextBlock(TextBlockType.Section, "", "SECTION1"),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION1", "<!-- @@SECTION1@@ -->\r\n"),
+                    new TextBlock(TextBlockType.Prefix, null, "SECTION1", ""),
+                    new TextBlock(TextBlockType.SectionTag, null, "SECTION1", "<!-- @@SECTION1@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, null, "SECTION1", "\r\n"),
                     new TextBlock(TextBlockType.Text, "\r\nsome stuff with a "),
                     new TextBlock(TextBlockType.Field, null, "Field0", "@@Field0@@"),
                     new TextBlock(TextBlockType.Text, " in it\r\ntext after")
@@ -275,9 +294,13 @@ namespace TemplateEngine.Tests
                     new TextBlock(TextBlockType.Text, "text and more text\r\n"),
                     new TextBlock(TextBlockType.Field, null, "Field1", "@@Field1@@"),
                     new TextBlock(TextBlockType.Text, "\r\n"),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION2", "<!-- @@SECTION2@@ -->\r\n"),
+                    new TextBlock(TextBlockType.Prefix, null, "SECTION2", ""),
+                    new TextBlock(TextBlockType.SectionTag, null, "SECTION2", "<!-- @@SECTION2@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, null, "SECTION2", "\r\n"),
                     new TextBlock(TextBlockType.Section, "", "SECTION2"),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION2", "<!-- @@SECTION2@@ -->\r\n")
+                    new TextBlock(TextBlockType.Prefix, null, "SECTION2", ""),
+                    new TextBlock(TextBlockType.SectionTag, null, "SECTION2", "<!-- @@SECTION2@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, null, "SECTION2", "\r\n"),
                 }
             },
             { "SECTION2", new List<TextBlock>()

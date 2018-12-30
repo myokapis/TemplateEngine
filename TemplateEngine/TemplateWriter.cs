@@ -1,4 +1,20 @@
-﻿using System;
+﻿/* ****************************************************************************
+Copyright 2018 Gene Graves
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**************************************************************************** */
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,6 +23,10 @@ using System.Text;
 namespace TemplateEngine
 {
 
+    /// <summary>
+    /// Provides methods for manipulating and filling template sections with data and returning the text of the 
+    /// populated template
+    /// </summary>
     public class TemplateWriter : ITemplateWriter
     {
         private ITemplate template;
@@ -20,6 +40,10 @@ namespace TemplateEngine
         private Dictionary<string, List<ITemplateWriter>> providerSets = new Dictionary<string, List<ITemplateWriter>>();
         protected Dictionary<string, List<ITemplateWriter>> sectionSets = new Dictionary<string, List<ITemplateWriter>>();
 
+        /// <summary>
+        /// Constructs a new TemplateWriter for a template
+        /// </summary>
+        /// <param name="template">The template on which the writer will operate</param>
         public TemplateWriter(ITemplate template)
         {
             this.template = template;
@@ -31,6 +55,11 @@ namespace TemplateEngine
             this.registeredSections = new Dictionary<string, ITemplateWriter>();
         }
 
+        /// <summary>
+        /// Constructs a new TemplateWriter for a section of a template
+        /// </summary>
+        /// <param name="template">The parent template containing the requested section</param>
+        /// <param name="sectionName">The template section on which the writer will operate</param>
         protected TemplateWriter(ITemplate template, string sectionName)
         {
             this.template = template.GetTemplate(sectionName);
@@ -40,6 +69,10 @@ namespace TemplateEngine
             this.registeredSections = new Dictionary<string, ITemplateWriter>();
         }
 
+        /// <summary>
+        /// Creates a new TemplateWriter based on an existing TemplateWriter instance
+        /// </summary>
+        /// <param name="templateWriter"></param>
         protected TemplateWriter(TemplateWriter templateWriter)
         {
             this.template = templateWriter.template;
@@ -153,6 +186,10 @@ namespace TemplateEngine
             return null;
         }
 
+        public bool HasData => (this.fieldValueSets.Count > 0)
+            || !this.template.IsEmpty
+            || (this.providerSets.Count > 0);
+
         public string HashCode => this.template.TemplateId.ToString();
 
         public bool IsRootSelected
@@ -240,7 +277,7 @@ namespace TemplateEngine
             this.stack.Push(writer);
         }
 
-        // TODO: change this to a param array and have the code iterate the selection params
+        // TODO: maybe change this to a param array and have the code iterate the selection params
         public void SelectSection(string sectionName)
         {
             // delegate to the provider if one is selected
@@ -281,26 +318,19 @@ namespace TemplateEngine
 
         #region Field Setters For IEnumerable
 
-        public void SetSectionFields<T>(string sectionName, T data) where T : IEnumerable<T>
+        public void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data)
         {
             SelectSection(sectionName);
-            SetSectionFields<T>(data, SectionOptions.AppendDeselect, null);
+            SetMultiSectionFields(data, null);
         }
 
-        public void SetSectionFields<T>(string sectionName, T data, FieldDefinitions fieldDefinitions) where T : IEnumerable<T>
+        public void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
-            SetSectionFields<T>(data, SectionOptions.AppendDeselect, fieldDefinitions);
+            SetMultiSectionFields<T>(data, fieldDefinitions);
         }
 
-        public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions,
-            FieldDefinitions fieldDefinitions = null) where T : IEnumerable<T>
-        {
-            SelectSection(sectionName);
-            SetSectionFields<T>(data, sectionOptions, fieldDefinitions);
-        }
-
-        public void SetSectionFields<T>(T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null) where T : IEnumerable<T>
+        public void SetMultiSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions = null)
         {
             FieldDefinitions definitions = (fieldDefinitions != null) ? fieldDefinitions : new FieldDefinitions();
 
@@ -312,7 +342,6 @@ namespace TemplateEngine
                 {
                     if (definitions.Checkboxes.Contains(kvp.Key))
                     {
-                        // TODO: handle any case (upper, lower, mixed)
                         string checkedValue = (TrueValues.Contains(kvp.Value)) ? "checked='checked'" : "";
                         SetField(kvp.Key, checkedValue);
                     }
@@ -327,11 +356,15 @@ namespace TemplateEngine
                     }
                 }
 
-                if (sectionOptions.Append) AppendSection();
+                AppendSection();
+
+                var selectedSectionName = this.currentWriter.SelectedSectionName;
+                DeselectSection();
+                SelectSection(selectedSectionName);
 
             }
 
-            if (sectionOptions.Deselect) DeselectSection();
+            DeselectSection();
 
         }
 
@@ -339,25 +372,25 @@ namespace TemplateEngine
 
         #region Field Setters For POCO
 
-        public void SetSectionFields<T>(T data, string sectionName)
+        public void SetSectionFields<T>(string sectionName, T data)
         {
             SelectSection(sectionName);
-            SetSectionFields(SectionOptions.AppendDeselect, data, null);
+            SetSectionFields(data, SectionOptions.AppendDeselect, null);
         }
 
-        public void SetSectionFields<T>(T data, string sectionName, FieldDefinitions fieldDefinitions)
+        public void SetSectionFields<T>(string sectionName, T data, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
-            SetSectionFields(SectionOptions.AppendDeselect, data, fieldDefinitions);
+            SetSectionFields(data, SectionOptions.AppendDeselect, fieldDefinitions);
         }
 
-        public void SetSectionFields<T>(SectionOptions sectionOptions, T data, string sectionName, FieldDefinitions fieldDefinitions = null)
+        public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
         {
             SelectSection(sectionName);
-            SetSectionFields(sectionOptions, data, fieldDefinitions);
+            SetSectionFields(data, sectionOptions, fieldDefinitions);
         }
 
-        public void SetSectionFields<T>(SectionOptions sectionOptions, T data, FieldDefinitions fieldDefinitions = null)
+        public void SetSectionFields<T>(T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
         {
 
             FieldDefinitions definitions = (fieldDefinitions != null) ? fieldDefinitions : new FieldDefinitions();
@@ -490,18 +523,49 @@ namespace TemplateEngine
 
         protected void WriteTextBlocks(StringBuilder sb, Dictionary<string, string> fieldValueSet)
         {
+
             foreach (var textBlock in this.template.TextBlocks)
             {
+
                 if (textBlock.Type == TextBlockType.Text)
                 {
                     sb.Append(textBlock.Text);
                 }
                 else if (textBlock.Type == TextBlockType.Section)
                 {
+
+                    List<string> extraText = null;
+                    
                     // iterate each writer for the given section
-                    foreach(var writer in this.sectionSets[textBlock.ReferenceName])
+                    foreach (var writer in this.sectionSets[textBlock.ReferenceName])
                     {
-                        (writer as TemplateWriter).GetContent(sb);
+                        var tw = (writer as TemplateWriter);
+
+                        // get the extra text for the section to be written section
+                        if(tw.template.IsSingleLine && extraText == null)
+                        {
+                            extraText = this.template.TextBlocks
+                                .Where(b => b.ReferenceName == textBlock.ReferenceName
+                                    && (b.Type == TextBlockType.Prefix || b.Type == TextBlockType.Suffix))
+                                .Select(b => b.TagText)
+                                .ToList();
+                        }
+
+                        // write the extra text for the opening tag
+                        if (extraText != null && tw.HasData)
+                        {
+                            sb.Append(extraText[0]);
+                            sb.Append(extraText[1]);
+                        }
+
+                        tw.GetContent(sb);
+
+                        // write the extra text for the closing tag
+                        if (extraText != null && tw.HasData)
+                        {
+                            sb.Append(extraText[2]);
+                            sb.Append(extraText[3]);
+                        }
                     }
                 }
                 else if (textBlock.Type == TextBlockType.Field)
@@ -521,6 +585,7 @@ namespace TemplateEngine
                     }
                 }
             }
+
         }
 
         #endregion

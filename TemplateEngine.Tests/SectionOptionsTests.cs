@@ -14,28 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using FluentAssertions;
+using Xunit;
 
-namespace TemplateEngine
+namespace TemplateEngine.Tests
 {
 
-    public static class TrueValues
+    public class SectionOptionsTests
     {
 
-        // TODO: provide a way for developers to set and get values that are localized
-        static TrueValues()
+        [Fact]
+        public void TestSectionOptions_AppendDeselect()
         {
-            Values = new List<string> { "Yes", "Y", "T", "True", "1" };
+            var option = SectionOptions.AppendDeselect;
+            option.Append.Should().Be(true);
+            option.Deselect.Should().Be(true);
         }
 
-        public static bool Contains(string value)
+        [Fact]
+        public void TestSectionOptions_AppendOnly()
         {
-            return Values.Any(v => string.Equals(value, v, StringComparison.CurrentCultureIgnoreCase));
+            var option = SectionOptions.AppendOnly;
+            option.Append.Should().Be(true);
+            option.Deselect.Should().Be(false);
         }
 
-        public static List<string> Values { get; set; }
+        [Fact]
+        public void TestSectionOptions_Set()
+        {
+            var option = SectionOptions.Set;
+            option.Append.Should().Be(false);
+            option.Deselect.Should().Be(false);
+        }
 
     }
 

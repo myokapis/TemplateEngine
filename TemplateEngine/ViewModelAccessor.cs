@@ -16,7 +16,6 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
@@ -24,19 +23,31 @@ using TemplateEngine.Formats;
 
 namespace TemplateEngine
 {
+
     // TODO: maybe use Lazy<T> for loading field properties
+    /// <summary>
+    /// Allows a data object's properties to be accessed by index or name.
+    /// Also allows a data object's properties to be iterated.
+    /// </summary>
+    /// <typeparam name="T">Type of the data object</typeparam>
     public class ViewModelAccessor<T>
     {
 
         private static List<PropertyInfo> _fieldProperties = null;
         private static object[] _indexes = new object[] { };
-        private T _model;
 
+        /// <summary>
+        /// Creates a model accessor from a data object
+        /// </summary>
+        /// <param name="Model">The data object for which properties will be accessed</param>
         public ViewModelAccessor(T Model)
         {
-            _model = Model;
+            this.Model = Model;
         }
 
+        /// <summary>
+        /// Count of accessible property fields on the data object
+        /// </summary>
         public int Count
         {
             get
@@ -45,6 +56,9 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// A collection of key-value pairs containing each field name and its corresponding value
+        /// </summary>
         public IEnumerable<KeyValuePair<string, string>> FieldValues
         {
             get
@@ -56,15 +70,16 @@ namespace TemplateEngine
             }
         }
 
-        public T Model
-        {
-            get
-            {
-                return _model;
-            }
-        }
+        /// <summary>
+        /// The data object for which properties will be accessed
+        /// </summary>
+        public T Model { get; }
 
-        // return the value of the field at the specified index
+        /// <summary>
+        /// Returns a field value based on a field index
+        /// </summary>
+        /// <param name="fieldIndex">The index of the field to be accessed</param>
+        /// <returns>A string representing the value of the field</returns>
         public string this[int fieldIndex]
         {
             get
@@ -74,7 +89,11 @@ namespace TemplateEngine
             }
         }
 
-        // return the field value for the specified field name
+        /// <summary>
+        /// Returns a field value based on a field name
+        /// </summary>
+        /// <param name="fieldName">The name of the field to be accessed</param>
+        /// <returns>A string representing the value of the field</returns>
         public string this[string fieldName]
         {
             get
@@ -97,7 +116,7 @@ namespace TemplateEngine
 
         protected string FormatValue(PropertyInfo pi)
         {
-            object value = pi.GetValue(_model);
+            object value = pi.GetValue(Model);
             if (value == null) return "";
 
             var formatter = (FormatAttribute)Attribute.GetCustomAttribute(pi, typeof(FormatAttribute));

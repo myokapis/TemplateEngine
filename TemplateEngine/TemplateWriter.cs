@@ -72,7 +72,7 @@ namespace TemplateEngine
         /// <summary>
         /// Creates a new TemplateWriter based on an existing TemplateWriter instance
         /// </summary>
-        /// <param name="templateWriter"></param>
+        /// <param name="templateWriter">TemplateWriter to clone</param>
         protected TemplateWriter(TemplateWriter templateWriter)
         {
             this.template = templateWriter.template;
@@ -84,6 +84,12 @@ namespace TemplateEngine
 
         private ITemplateWriter currentWriter => this.stack?.Peek();
 
+        /// <summary>
+        /// Append and deselect all sections in the hierarchy beginning with the current section and ending
+        /// at the section designated by the sectionName parameter. If no sectionName parameter is provided
+        /// then the entire hierarchy is appended.
+        /// </summary>
+        /// <param name="sectionName">Name of the last section to append</param>
         public void AppendAll(string sectionName = null)
         {
             if(this.selectedProvider != null)
@@ -102,6 +108,10 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Appends the current section and optionally deselects the current section.
+        /// </summary>
+        /// <param name="deselect">Sets the deselect behavior</param>
         public void AppendSection(bool deselect = false)
         {
             if(this.selectedProvider != null)
@@ -115,6 +125,9 @@ namespace TemplateEngine
             if (deselect) DeselectSection();
         }
 
+        /// <summary>
+        /// Resets the data fields in the current section.
+        /// </summary>
         public void Clear()
         {
             if(this.selectedProvider != null)
@@ -133,6 +146,9 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Deselects the current section and makes the parent section the new selected section
+        /// </summary>
         public void DeselectSection()
         {
             if(this.selectedProvider != null)
@@ -160,6 +176,12 @@ namespace TemplateEngine
             (this.currentWriter as TemplateWriter).SaveSection(writer);
         }
 
+        /// <summary>
+        /// Generates template text with data fields populated. Optionally appends all sections of the
+        /// hierarchy before generating the output.
+        /// </summary>
+        /// <param name="appendAll">Sets the append all behavior</param>
+        /// <returns>A text document with template fields populated</returns>
         public string GetContent(bool appendAll = false)
         {
             if (appendAll && (this.stack != null)) this.AppendAll();
@@ -168,6 +190,11 @@ namespace TemplateEngine
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Gets a TemplateWriter for the requested section
+        /// </summary>
+        /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
+        /// <returns><cref="ITemplateWriter" /> for the requested section</returns>
         public ITemplateWriter GetWriter(string sectionName)
         {
             // check for a match with the current section
@@ -186,12 +213,16 @@ namespace TemplateEngine
             return null;
         }
 
+        /// <summary>
+        /// Indicates if the template contains any text or fields
+        /// </summary>
         public bool HasData => (this.fieldValueSets.Count > 0)
             || !this.template.IsEmpty
             || (this.providerSets.Count > 0);
 
-        public string HashCode => this.template.TemplateId.ToString();
-
+        /// <summary>
+        /// Indicates if the currently selected section is a root section
+        /// </summary>
         public bool IsRootSelected
         {
             get
@@ -204,6 +235,9 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Removes all populated field data and clears the current section
+        /// </summary>
         public void Reset()
         {
             if (this.stack == null || this.currentWriter == this)
@@ -219,6 +253,12 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Allows a template writer to be bound to a field and to populate a field
+        /// </summary>
+        /// <param name="fieldName">Name of the field to be bound</param>
+        /// <param name="writer">Writer instance that will provide data for the field</param>
+        /// <returns>Indicates if the writer was successfully bound to the field</returns>
         public bool RegisterFieldProvider(string fieldName, ITemplateWriter writer)
         {
             // skip if the writer is the current writer
@@ -235,6 +275,13 @@ namespace TemplateEngine
             return true;
         }
 
+        /// <summary>
+        /// Allows a template writer to be bound to a field and to populate a field in a template subsection
+        /// </summary>
+        /// <param name="sectionName">Name of child section containing the field to be bound</param>
+        /// <param name="fieldName">Name of the field to be bound</param>
+        /// <param name="writer">Writer instance that will provide data for the field</param>
+        /// <returns>Indicates if the writer was successfully bound to the field</returns>
         public bool RegisterFieldProvider(string sectionName, string fieldName, ITemplateWriter writer)
         {
 
@@ -267,8 +314,15 @@ namespace TemplateEngine
             this.sectionSets[writer.SectionName].Add(writer);
         }
 
+        /// <summary>
+        /// Section name associated with this writer
+        /// </summary>
         public string SectionName => this.template.SectionName;
 
+        /// <summary>
+        /// Selects a provider that will act as the current section
+        /// </summary>
+        /// <param name="fieldName">Name of the field to which the provider is bound</param>
         public void SelectProvider(string fieldName)
         {
             var cw = this.currentWriter as TemplateWriter;
@@ -277,6 +331,10 @@ namespace TemplateEngine
             this.stack.Push(writer);
         }
 
+        /// <summary>
+        /// Selects a child section to be the current section
+        /// </summary>
+        /// <param name="sectionName">Name of the section to select</param>
         // TODO: maybe change this to a param array and have the code iterate the selection params
         public void SelectSection(string sectionName)
         {
@@ -292,6 +350,9 @@ namespace TemplateEngine
             this.stack.Push(writer);
         }
 
+        /// <summary>
+        /// Name of the currently selected section
+        /// </summary>
         public string SelectedSectionName
         {
             get
@@ -301,6 +362,12 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Sets option fields in a section
+        /// </summary>
+        /// <param name="sectionName">Name of the option section</param>
+        /// <param name="data">Option data</param>
+        /// <param name="selectedValue">Value of the selected option</param>
         public void SetOptionFields(string sectionName, IEnumerable<Option> data, string selectedValue = "")
         {
             SelectSection(sectionName.ToUpper());
@@ -318,18 +385,37 @@ namespace TemplateEngine
 
         #region Field Setters For IEnumerable
 
+        /// <summary>
+        /// Sets section fields and appends the section once for each object in the data collection
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="sectionName">Name of the section in which to set fields</param>
+        /// <param name="data">Data collection</param>
         public void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data)
         {
             SelectSection(sectionName);
             SetMultiSectionFields(data, null);
         }
 
+        /// <summary>
+        /// Sets section fields and appends the section once for each object in the data collection
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="sectionName">Name of the section in which to set fields</param>
+        /// <param name="data">Data collection</param>
+        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
             SetMultiSectionFields<T>(data, fieldDefinitions);
         }
 
+        /// <summary>
+        /// Sets section fields and appends the section once for each object in the data collection
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="data">Data collection</param>
+        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetMultiSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions = null)
         {
             FieldDefinitions definitions = (fieldDefinitions != null) ? fieldDefinitions : new FieldDefinitions();
@@ -372,24 +458,52 @@ namespace TemplateEngine
 
         #region Field Setters For POCO
 
+        /// <summary>
+        /// Sets section fields from a data object
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="sectionName">Name of the section to set</param>
+        /// <param name="data">Data object</param>
         public void SetSectionFields<T>(string sectionName, T data)
         {
             SelectSection(sectionName);
             SetSectionFields(data, SectionOptions.AppendDeselect, null);
         }
 
+        /// <summary>
+        /// Sets section fields from a data object
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="sectionName">Name of the section to set</param>
+        /// <param name="data">Data object</param>
+        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(string sectionName, T data, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
             SetSectionFields(data, SectionOptions.AppendDeselect, fieldDefinitions);
         }
 
+        /// <summary>
+        /// Sets section fields from a data object
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="sectionName">Name of the section to set</param>
+        /// <param name="data">Data object</param>
+        /// <param name="sectionOptions"><cref="SectionOptions" /> for desired append and deselect behavior</param>
+        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
         {
             SelectSection(sectionName);
             SetSectionFields(data, sectionOptions, fieldDefinitions);
         }
 
+        /// <summary>
+        /// Sets section fields from a data object
+        /// </summary>
+        /// <typeparam name="T">Type of the data object</typeparam>
+        /// <param name="data">Data object</param>
+        /// <param name="sectionOptions"><cref="SectionOptions" /> for desired append and deselect behavior</param>
+        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
         {
 
@@ -424,6 +538,11 @@ namespace TemplateEngine
 
         #region Field Setters For Base Types
 
+        /// <summary>
+        /// Sets a field from a string value
+        /// </summary>
+        /// <param name="key">Name of the field to set</param>
+        /// <param name="val">Field value</param>
         public void SetField(string key, string val)
         {
             if (this.stack == null || this.currentWriter == this)
@@ -444,12 +563,21 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Sets a field from a string value
+        /// </summary>
+        /// <typeparam name="T">Type of the field value</typeparam>
+        /// <param name="key">Name of the field to set</param>
+        /// <param name="val">Field value</param>
         public void SetField<T>(string key, T val)
         {
             var stringVal = (val == null) ? "" : val.ToString();
             SetField(key, stringVal);
         }
 
+        /// <summary>
+        /// Unique id of the template bound to this writer
+        /// </summary>
         public Guid TemplateId => this.template.TemplateId;
 
         #endregion

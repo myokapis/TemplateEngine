@@ -35,8 +35,6 @@ namespace TemplateEngine
 
         ITemplateWriter GetWriter(string sectionName);
 
-        string HashCode { get; }
-
         bool IsRootSelected { get; }
 
         bool RegisterFieldProvider(string fieldName, ITemplateWriter writer);
@@ -62,8 +60,6 @@ namespace TemplateEngine
         void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data);
 
         void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data, FieldDefinitions fieldDefinitions);
-
-        //void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null);
 
         void SetMultiSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions = null);
 

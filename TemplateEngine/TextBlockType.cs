@@ -17,6 +17,9 @@ limitations under the License.
 namespace TemplateEngine
 {
 
+    /// <summary>
+    /// Enum indicating the type of a text block
+    /// </summary>
     public enum TextBlockType
     {
         Field = 1,

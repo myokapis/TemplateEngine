@@ -33,7 +33,7 @@ namespace TemplateEngine
 
         string GetContent(bool appendAll = false);
 
-        ITemplateWriter GetWriter(string sectionName);
+        ITemplateWriter GetWriter(string sectionName, bool makeRoot = false);
 
         bool IsRootSelected { get; }
 

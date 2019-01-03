@@ -283,20 +283,20 @@ namespace TemplateEngine.Tests
                 Culture = cultures[0],
                 DateFormatter = GetDateFormatter(cultures[0]),
                 DateValue = new DateTime(2025, 11, 13, 23, 47, 33),
-                DecimalPlaces = null,
+                DecimalPlaces = 2,
                 DecimalSeparator = null,
-                ExpectedCurrencyValue = "($123,456.79)",
+                ExpectedCurrencyValue = "-$123,456.79",
                 ExpectedDateValue = "2025-11-13 11:47:33 PM",
                 ExpectedIntegerValue = "-123,457",
                 ExpectedNumberValue = "-123,456.79",
                 ExpectedPercentValue = "-12,345,678.90%",
-                FormatStringCurrency = "C2",
+                FormatStringCurrency = "$###,###,##0.00",
                 FormatStringDate = "yyyy-MM-dd hh:mm:ss tt",
                 FormatStringInteger = "###,##0",
                 FormatStringNumber = "###,##0.00",
                 FormatStringPercent = "###,###,##0.00%",
                 GroupSeparator = null,
-                NegativePattern = null,
+                NegativePattern = 1,
                 NumberFormatter = GetNumberFormatter(cultures[0]),
                 NumberValue = -123456.789,
             },
@@ -348,18 +348,18 @@ namespace TemplateEngine.Tests
                 DateValue = new DateTime(2025, 11, 13, 23, 47, 33),
                 DecimalPlaces = 4,
                 DecimalSeparator = null,
-                ExpectedCurrencyValue = "-23.456,7890 €",
+                ExpectedCurrencyValue = "-€23.456,7890",
                 ExpectedDateValue = "13.11.2025 23:47:33",
                 ExpectedIntegerValue = "-23.457",
                 ExpectedNumberValue = "-23.456,7890",
-                ExpectedPercentValue = "-2.345.678,9000 %",
-                FormatStringCurrency = "###,##0.0000 €",
+                ExpectedPercentValue = "-2.345.678,9000%",
+                FormatStringCurrency = "€###,##0.0000",
                 FormatStringDate = "dd.MM.yyyy HH:mm:ss",
                 FormatStringInteger = "###'.'##0",
                 FormatStringNumber = "###,##0.0000",
-                FormatStringPercent = "###,###,##0.0000 %",
+                FormatStringPercent = "###,###,##0.0000%",
                 GroupSeparator = ".",
-                NegativePattern = null,
+                NegativePattern = 1,
                 NumberFormatter = GetNumberFormatter(cultures[3], 4),
                 NumberValue = -23456.789
             },
@@ -389,17 +389,14 @@ namespace TemplateEngine.Tests
             return (DateTimeFormatInfo)culture.DateTimeFormat.Clone();
         }
 
-        private static NumberFormatInfo GetNumberFormatter(CultureInfo culture, int? decimalPlaces = null,
-            string decimalSeparator = null, string groupSeparator = null, int? negativePattern = null)
+        private static NumberFormatInfo GetNumberFormatter(CultureInfo culture, int decimalPlaces = 2,
+            string decimalSeparator = null, string groupSeparator = null, int negativePattern = 1)
         {
             var f = (NumberFormatInfo)culture.NumberFormat.Clone();
 
-            if (decimalPlaces.HasValue)
-            {
-                f.CurrencyDecimalDigits = decimalPlaces.Value;
-                f.NumberDecimalDigits = decimalPlaces.Value;
-                f.PercentDecimalDigits = decimalPlaces.Value;
-            }
+            f.CurrencyDecimalDigits = decimalPlaces;
+            f.NumberDecimalDigits = decimalPlaces;
+            f.PercentDecimalDigits = decimalPlaces;
 
             if(decimalSeparator != null)
             {
@@ -415,12 +412,9 @@ namespace TemplateEngine.Tests
                 f.PercentGroupSeparator = groupSeparator;
             }
 
-            if(negativePattern.HasValue)
-            {
-                f.CurrencyNegativePattern = negativePattern.Value;
-                f.NumberNegativePattern = negativePattern.Value;
-                f.PercentNegativePattern = negativePattern.Value;
-            }
+            f.CurrencyNegativePattern = negativePattern;
+            f.NumberNegativePattern = negativePattern;
+            f.PercentNegativePattern = negativePattern;
 
             return f;
         }
@@ -453,7 +447,7 @@ namespace TemplateEngine.Tests
             public CultureInfo Culture { get; set; }
             public DateTimeFormatInfo DateFormatter { get; set; }
             public object DateValue { get; set; }
-            public int? DecimalPlaces { get; set; }
+            public int DecimalPlaces { get; set; }
             public string DecimalSeparator { get; set; }
             public string ExpectedCurrencyValue { get; set; }
             public string ExpectedDateValue { get; set; }
@@ -466,7 +460,7 @@ namespace TemplateEngine.Tests
             public string FormatStringNumber { get; set; }
             public string FormatStringPercent { get; set; }
             public string GroupSeparator { get; set; }
-            public int? NegativePattern { get; set; }
+            public int NegativePattern { get; set; }
             public NumberFormatInfo NumberFormatter { get; set; }
             public object NumberValue { get; set; }
         }

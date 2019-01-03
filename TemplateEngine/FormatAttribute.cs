@@ -53,21 +53,21 @@ namespace TemplateEngine.Formats
         /// <param name="negativePattern">Pattern to be used for representing a negative value</param>
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
         /// <param name="decimalSeparator">Character to be used as a decimal separator</param>
-        public FormatCurrencyAttribute(int? decimalPlaces = null, int? negativePattern = null,
+        public FormatCurrencyAttribute(int decimalPlaces = 2, int negativePattern = 0,
             string groupSeparator = null, string decimalSeparator = null)
         {
             this.FormatInfo = (NumberFormatInfo)this.Culture.NumberFormat.Clone();
             this.FormatString = "C";
 
-            if (decimalPlaces.HasValue)
-            {
-                // override number of decimal places shown
-                if (decimalPlaces.Value < 0) throw new ArgumentException("Number of decimal places must be greater than zero");
-                this.FormatInfo.CurrencyDecimalDigits = decimalPlaces.Value;
-            }
+            // override number of decimal places shown
+            if (decimalPlaces < 0) throw new ArgumentException("Number of decimal places must be greater than zero");
+            this.FormatInfo.CurrencyDecimalDigits = decimalPlaces;
+
+            // override negative pattern
+            if(negativePattern < 0 || negativePattern > 15) throw new ArgumentException("Invalid negative pattern");
+            this.FormatInfo.CurrencyNegativePattern = negativePattern;
 
             // set format attributes
-            if (negativePattern.HasValue) this.FormatInfo.CurrencyNegativePattern = negativePattern.Value;
             if (groupSeparator != null) this.FormatInfo.CurrencyGroupSeparator = groupSeparator;
             if (decimalSeparator != null) this.FormatInfo.CurrencyDecimalSeparator = decimalSeparator;
         }
@@ -173,13 +173,14 @@ namespace TemplateEngine.Formats
         /// </summary>
         /// <param name="negativePattern">Pattern to be used for representing a negative value</param>
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
-        public FormatIntegerAttribute(int? negativePattern = null, string groupSeparator = null)
+        public FormatIntegerAttribute(int negativePattern = 0, string groupSeparator = null)
         {
             this.FormatInfo = (NumberFormatInfo)this.Culture.NumberFormat.Clone();
             this.FormatString = "N0";
 
-            // use a different negative pattern
-            if (negativePattern.HasValue) this.FormatInfo.NumberNegativePattern = negativePattern.Value;
+            // set the negative pattern
+            if (negativePattern < 0 || negativePattern > 15) throw new ArgumentException("Invalid negative pattern");
+            this.FormatInfo.NumberNegativePattern = negativePattern;
 
             // set the group separators
             if (groupSeparator != null) this.FormatInfo.NumberGroupSeparator = groupSeparator;
@@ -240,21 +241,19 @@ namespace TemplateEngine.Formats
         /// <param name="negativePattern">Pattern to be used for representing a negative value</param>
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
         /// <param name="decimalSeparator">Character to be used as a decimal separator</param>
-        public FormatNumberAttribute(int? decimalPlaces = null, int? negativePattern = null,
+        public FormatNumberAttribute(int decimalPlaces = 2, int negativePattern = 0,
             string groupSeparator = null, string decimalSeparator = null)
         {
             this.FormatInfo = (NumberFormatInfo)this.Culture.NumberFormat.Clone();
             this.FormatString = "N";
 
-            if (decimalPlaces.HasValue)
-            {
-                // override number of decimal places shown
-                if (decimalPlaces.Value < 0) throw new ArgumentException("Number of decimal places must be greater than zero");
-                this.FormatInfo.NumberDecimalDigits = decimalPlaces.Value;
-            }
+            // override number of decimal places shown
+            if (decimalPlaces < 0) throw new ArgumentException("Number of decimal places must be greater than zero");
+            this.FormatInfo.NumberDecimalDigits = decimalPlaces;
 
             // change the negative sign pattern
-            if (negativePattern.HasValue) this.FormatInfo.NumberNegativePattern = negativePattern.Value;
+            if (negativePattern < 0 || negativePattern > 15) throw new ArgumentException("Invalid negative pattern");
+            this.FormatInfo.NumberNegativePattern = negativePattern;
 
             // change the group separator
             if (groupSeparator != null) this.FormatInfo.NumberGroupSeparator = groupSeparator;
@@ -318,21 +317,19 @@ namespace TemplateEngine.Formats
         /// <param name="negativePattern">Pattern to be used for representing a negative value</param>
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
         /// <param name="decimalSeparator">Character to be used as a decimal separator</param>
-        public FormatPercentAttribute(int? decimalPlaces = null, int? negativePattern = null,
+        public FormatPercentAttribute(int decimalPlaces = 2, int? negativePattern = 0,
             string groupSeparator = null, string decimalSeparator = null)
         {
             this.FormatInfo = (NumberFormatInfo)this.Culture.NumberFormat.Clone();
             this.FormatString = "P";
 
-            if (decimalPlaces.HasValue)
-            {
-                // override number of decimal places shown
-                if (decimalPlaces.Value < 0) throw new ArgumentException("Number of decimal places must be greater than zero");
-                this.FormatInfo.PercentDecimalDigits = decimalPlaces.Value;
-            }
+            // override number of decimal places shown
+            if (decimalPlaces < 0) throw new ArgumentException("Number of decimal places must be greater than zero");
+            this.FormatInfo.PercentDecimalDigits = decimalPlaces;
 
             // change the negative number format
-            if (negativePattern.HasValue) this.FormatInfo.PercentNegativePattern = negativePattern.Value;
+            if (negativePattern < 0 || negativePattern > 15) throw new ArgumentException("Invalid negative pattern");
+            this.FormatInfo.PercentNegativePattern = negativePattern.Value;
 
             // change the group separator
             if (groupSeparator != null) this.FormatInfo.PercentGroupSeparator = groupSeparator;

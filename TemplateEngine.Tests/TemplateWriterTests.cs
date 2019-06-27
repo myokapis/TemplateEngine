@@ -16,6 +16,7 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using FluentAssertions;
 using Xunit;
 
@@ -331,6 +332,88 @@ namespace TemplateEngine.Tests
             var actual = writer.GetContent();
 
             actual.Equals(expected);
+        }
+
+        [Fact]
+        public void TestRepeatedNestedSections()
+        {
+            TemplateWriter.EnableTrace = true;
+
+            // setup a template and writer
+            var tpl = new Template(templateTexts[5]);
+            var writer = new TemplateWriter(tpl);
+
+            // populate field in main and get first nested section
+            writer.SetField("Main1", "Value1");
+            writer.SelectSection("SECTION1");
+
+            // set up parameters for creating nested sections
+            var i = 1;
+            var sectionCount1 = 1;
+            var sectionCount2 = 2;
+            var sectionCount3 = 2;
+
+            // populate repeated nested sections
+            for (var counter1 = 1; counter1 <= sectionCount1; counter1++)
+            {
+                writer.SetField("Field1_1", i++);
+                writer.SelectSection("SECTION2");
+
+                for (var counter2 = 1; counter2 <= sectionCount2; counter2++)
+                {
+                    writer.SetField("Field2_1", i++);
+                    writer.SelectSection("SECTION3");
+
+                    for(var counter3 = 1; counter3 <= sectionCount3; counter3++)
+                    {
+                        writer.SetField("Field3_1", i++);
+                        writer.AppendSection(counter3 == sectionCount3);
+                    }
+
+                    writer.SetField("Field2_2", i++);
+                    writer.AppendSection(counter2 == sectionCount2);
+                }
+                
+                writer.SetField("Field1_2", i++);
+                writer.AppendSection(counter1 == sectionCount1);
+            }
+
+
+            // set another field in main section
+            writer.SetField("Main2", "Value2");
+            writer.AppendAll();
+            var actual = writer.GetContent();
+
+            using (var file = new StreamWriter(@"C:\Temp\trace.txt"))
+            {
+                TemplateWriter.TraceResults.ForEach(r => file.WriteLine(r));
+            }
+                
+            var expected = new List<string>
+            {
+                "Main1: Value1\r\n",
+                "  Field1.1: 1\r\n",
+
+                "  Field2.1: 2\r\n",
+                "  section 3 text\r\n",
+                " Field3.1: 3\r\n",
+                "  section 3 text\r\n",
+                " Field3.1: 4\r\n",
+                "  Field2.2: 5\r\n",
+                "  post text section 2\r\n",
+
+                "  Field2.1: 6\r\n",
+                "  section 3 text\r\n",
+                " Field3.1: 7\r\n",
+                "  section 3 text\r\n",
+                " Field3.1: 8\r\n",
+                "  Field2.2: 9\r\n",
+                "  post text section 2\r\n",
+
+                "Main2: Value2"
+            }.Concat();
+
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -1171,6 +1254,23 @@ namespace TemplateEngine.Tests
                 "<!-- @@SECTION3@@ -->",
                 "  section 3 text\r\n",
                 "<!-- @@SECTION3@@ -->\r\n",
+                "Main2: @@Main2@@"
+            }.Concat(),
+            new List<string>
+            {
+                "Main1: @@Main1@@\r\n",
+                "<!-- @@SECTION1@@ -->\r\n",
+                "  Field1.1: @@Field1_1@@\r\n",
+                "<!-- @@SECTION2@@ -->\r\n",
+                "  Field2.1: @@Field2_1@@\r\n",
+                "<!-- @@SECTION3@@ -->",
+                "  section 3 text\r\n",
+                " Field3.1: @@Field3_1@@\r\n",
+                "<!-- @@SECTION3@@ -->\r\n",
+                "  Field2.2: @@Field2_2@@\r\n",
+                "<!-- @@SECTION2@@ -->\r\n",
+                "  post text section 2\r\n",
+                "<!-- @@SECTION1@@ -->\r\n",
                 "Main2: @@Main2@@"
             }.Concat()
         };

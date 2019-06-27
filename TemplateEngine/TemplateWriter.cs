@@ -53,6 +53,7 @@ namespace TemplateEngine
             PrepareSections();
             InitializeFieldValues();
             this.registeredSections = new Dictionary<string, ITemplateWriter>();
+            this.WriterId = Guid.NewGuid();
         }
 
         /// <summary>
@@ -67,6 +68,7 @@ namespace TemplateEngine
             PrepareSections();
             InitializeFieldValues();
             this.registeredSections = new Dictionary<string, ITemplateWriter>();
+            this.WriterId = Guid.NewGuid();
         }
 
         /// <summary>
@@ -80,12 +82,23 @@ namespace TemplateEngine
             this.sectionSets = templateWriter.sectionSets.ToDictionary(s => s.Key, s => new List<ITemplateWriter>());
             InitializeFieldValues();
             this.registeredSections = templateWriter.registeredSections;
+            this.WriterId = Guid.NewGuid();
 
             if (makeRoot)
             {
                 this.stack = new Stack<ITemplateWriter>();
                 stack.Push(this);
             }
+        }
+
+        private static List<string> traceResults = new List<string>();
+        public static void ClearTrace() => traceResults.Clear();
+        public static bool EnableTrace { get; set; }
+        public static List<string> TraceResults => new List<string>(traceResults);
+        private static void WriteTrace(TemplateWriter writer, TextBlock textBlock)
+        {
+            if (!EnableTrace) return;
+            traceResults.Add($"Writer: {writer.SectionName}-{writer.WriterId}; TextBlock: {textBlock.Type}-{textBlock.ReferenceName}");
         }
 
         private ITemplateWriter currentWriter => this.stack?.Peek();
@@ -233,8 +246,16 @@ namespace TemplateEngine
         /// </summary>
         public bool HasData => (this.fieldValueSets.Count > 0)
             || !this.template.IsEmpty;
-        // TODO: figure out what logic to use here
-            //|| (this.providerSets.Count > 0);
+
+        public List<string> Inspect()
+        {
+
+        }
+
+        protected Inspect(List<string> inspection, int Level)
+        {
+
+        }
 
         /// <summary>
         /// Indicates if the currently selected section is a root section
@@ -666,11 +687,15 @@ namespace TemplateEngine
             }
         }
 
+        // unique id of this instance
+        public Guid WriterId { get; }
+
         protected void WriteTextBlocks(StringBuilder sb, Dictionary<string, string> fieldValueSet)
         {
 
             foreach (var textBlock in this.template.TextBlocks)
             {
+                WriteTrace(this, textBlock);
 
                 if (textBlock.Type == TextBlockType.Text)
                 {

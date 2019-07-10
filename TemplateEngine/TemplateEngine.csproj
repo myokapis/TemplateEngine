@@ -58,6 +58,7 @@
     <Compile Include="TextBlock.cs" />
     <Compile Include="TextBlockType.cs" />
     <Compile Include="TrueValues.cs" />
+    <Compile Include="ValueSet.cs" />
     <Compile Include="ViewModelAccessor.cs" />
   </ItemGroup>
   <ItemGroup>

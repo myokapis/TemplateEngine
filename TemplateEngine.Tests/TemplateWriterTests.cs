@@ -25,6 +25,11 @@ namespace TemplateEngine.Tests
 
     public class TemplateWriterTests
     {
+        [Fact]
+        public void TestInspect()
+        {
+
+        }
 
         [Fact]
         public void TestAppendAll()
@@ -136,7 +141,7 @@ namespace TemplateEngine.Tests
             childWriter.AppendSection();
             var actual = childWriter.GetContent();
 
-            actual.Should().Equals("  Field1: Value2\r\n  Field2: 44\r\n");
+            actual.Should().Be("  Field1: Value2\r\n  Field2: 44\r\n");
         }
 
         [Fact]
@@ -169,6 +174,45 @@ namespace TemplateEngine.Tests
             parentWriter.SelectedSectionName.Should().Be("SECTION3");
             parentWriter.DeselectSection();
             parentWriter.SelectedSectionName.Should().Be("@MAIN");
+        }
+
+        [Fact]
+        public void TestFieldProviderAsOnlyField()
+        {
+            // create a template and main writer for the test
+            var tpl1 = new Template(this.templateTexts[7]);
+            var writer = new TemplateWriter(tpl1);
+
+            // create a template and writer to serve as a provider and register it with the main writer
+            var tpl2 = new Template(this.templateTexts[8]);
+            var contentWriter = new TemplateWriter(tpl2);
+            var provider = contentWriter.GetWriter("HEAD");
+            writer.RegisterFieldProvider("HEAD", provider);
+
+            // select the provider and append it
+            writer.SelectProvider("HEAD");
+            writer.AppendSection(true);
+
+            // append all the way out
+            writer.AppendAll();
+
+            var expected = new List<string>
+            {
+                "<html>",
+                "<head>",
+                "    <title>Test</title>",
+                "<link rel=\"stylesheet\" href=\"Content/Import.css\" />",
+                "<script type=\"text/javascript\" src=\"Scripts/App/import.js\"></script>",
+                "</head>",
+                "<body>",
+                "  Some test info",
+                "</body>",
+                "</html>"
+            }.Concat();
+
+            var actual = writer.GetContent();
+
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -229,6 +273,52 @@ namespace TemplateEngine.Tests
         }
 
         [Fact]
+        public void TestNestedFieldProviders()
+        {
+            // create a template and main writer for the test
+            var tpl = new Template(this.templateTexts[6]);
+            var writer = new TemplateWriter(tpl);
+
+            // create a writer to serve as a provider and register it with the main writer
+            var provider1 = new TemplateWriter(tpl);
+            writer.RegisterFieldProvider("Field1", provider1);
+
+            // create a writer to serve as a provider and register it with the first provider
+            var provider2 = new TemplateWriter(tpl);
+            provider1.RegisterFieldProvider("Field1", provider2);
+
+            // set values in the main writer
+            writer.SetField("SectionName", "Main Writer");
+
+            // select the first provider and set values in it
+            writer.SelectProvider("Field1");
+            writer.SetField("SectionName", "Provider 1");
+
+            // select the second provider and set values in it
+            writer.SelectProvider("Field1");
+            writer.SetField("SectionName", "Provider 2");
+            writer.SetField("Field1", "Actual field value");
+
+            // append all the way out of the providers and the writer
+            writer.AppendAll();
+
+            var expected = new List<string>
+            {
+                "Start of section Main Writer",
+                "Start of section Provider 1",
+                "Start of section Provider 2",
+                "Actual field value",
+                "End of section Provider 2",
+                "End of section Provider 1",
+                "End of section Main Writer"
+            }.Concat();
+
+            var actual = writer.GetContent();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
         public void TestRegisterFieldProvider_Child()
         {
             // create a template and main writer for the test
@@ -280,7 +370,7 @@ namespace TemplateEngine.Tests
 
             var actual = writer.GetContent();
 
-            actual.Equals(expected);
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -331,7 +421,7 @@ namespace TemplateEngine.Tests
 
             var actual = writer.GetContent();
 
-            actual.Equals(expected);
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -400,8 +490,6 @@ namespace TemplateEngine.Tests
                 "  section 3 text\r\n",
                 " Field3.1: 4\r\n",
                 "  Field2.2: 5\r\n",
-                "  post text section 2\r\n",
-
                 "  Field2.1: 6\r\n",
                 "  section 3 text\r\n",
                 " Field3.1: 7\r\n",
@@ -1272,6 +1360,31 @@ namespace TemplateEngine.Tests
                 "  post text section 2\r\n",
                 "<!-- @@SECTION1@@ -->\r\n",
                 "Main2: @@Main2@@"
+            }.Concat(),
+            new List<string>
+            {
+                "Start of section @@SectionName@@",
+                "@@Field1@@",
+                "End of section @@SectionName@@"
+            }.Concat(),
+            new List<string>
+            {
+                "<html>",
+                "<head>",
+                "    <title>Test</title>",
+                "    @@HEAD@@",
+                "</head>",
+                "<body>",
+                "  Some test info",
+                "</body>",
+                "</html>"
+            }.Concat(),
+            new List<string>
+            {
+                "<!-- @@HEAD@@ -->",
+                "<link rel=\"stylesheet\" href=\"Content/Import.css\" />",
+                "<script type=\"text/javascript\" src=\"Scripts/App/import.js\"></script>",
+                "<!-- @@HEAD@@ -->"
             }.Concat()
         };
 

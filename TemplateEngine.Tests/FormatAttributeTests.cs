@@ -108,7 +108,7 @@ namespace TemplateEngine.Tests
             {
                 TestInCulture(data.Culture, () =>
                 {
-                    var attr = new FormatDateAttribute(data.DateFormatter);
+                    var attr = new FormatDateAttribute(data.DateFormatter, data.FormatStringDate);
                     var actual = attr.FormatData(data.DateValue);
                     actual.Should().Be(data.ExpectedDateValue);
                 });

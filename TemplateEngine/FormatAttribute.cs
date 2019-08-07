@@ -133,10 +133,10 @@ namespace TemplateEngine.Formats
         /// Date format constructor that accepts a date formatter
         /// </summary>
         /// <param name="formatInfo">A <cref="DateTimeFormatInfo" /> to be used for formatting</param>
-        public FormatDateAttribute(DateTimeFormatInfo formatInfo)
+        public FormatDateAttribute(DateTimeFormatInfo formatInfo, string formatString = null)
         {
             this.FormatInfo = formatInfo;
-            this.FormatString = null;
+            this.FormatString = formatString ?? "G";
         }
 
         private DateTimeFormatInfo FormatInfo { get; }

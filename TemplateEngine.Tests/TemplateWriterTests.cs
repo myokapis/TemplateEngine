@@ -201,7 +201,7 @@ namespace TemplateEngine.Tests
                 "<html>",
                 "<head>",
                 "    <title>Test</title>",
-                "<link rel=\"stylesheet\" href=\"Content/Import.css\" />",
+                "    <link rel=\"stylesheet\" href=\"Content/Import.css\" />",
                 "<script type=\"text/javascript\" src=\"Scripts/App/import.js\"></script>",
                 "</head>",
                 "<body>",
@@ -283,16 +283,16 @@ namespace TemplateEngine.Tests
             var provider1 = new TemplateWriter(tpl);
             writer.RegisterFieldProvider("Field1", provider1);
 
-            // create a writer to serve as a provider and register it with the first provider
-            var provider2 = new TemplateWriter(tpl);
-            provider1.RegisterFieldProvider("Field1", provider2);
-
             // set values in the main writer
             writer.SetField("SectionName", "Main Writer");
 
             // select the first provider and set values in it
             writer.SelectProvider("Field1");
             writer.SetField("SectionName", "Provider 1");
+
+            // create a writer to serve as a provider and register it with the first provider
+            var provider2 = new TemplateWriter(tpl);
+            writer.CurrentWriter.RegisterFieldProvider("Field1", provider2);
 
             // select the second provider and set values in it
             writer.SelectProvider("Field1");
@@ -733,6 +733,7 @@ namespace TemplateEngine.Tests
             writer.SetField("Field1", t);
             writer.AppendSection(true);
             writer.AppendSection();
+
             var content = writer.GetContent();
 
             var expected = string.Concat(

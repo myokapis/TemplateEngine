@@ -35,6 +35,7 @@ namespace TemplateEngine
 
         ITemplateWriter GetWriter(string sectionName); //, bool makeRoot = false);
 
+        bool IsProvider { get; }
         //bool IsRootSelected { get; }
 
         bool RegisterFieldProvider(string fieldName, ITemplateWriter writer);

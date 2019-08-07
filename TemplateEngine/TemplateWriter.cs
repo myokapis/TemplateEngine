@@ -253,7 +253,7 @@ namespace TemplateEngine
                 }
             }
 
-            return new TemplateWriter(writer as TemplateWriter);
+            return writer; // new TemplateWriter(writer as TemplateWriter);
         }
 
         /// <summary>
@@ -354,16 +354,16 @@ namespace TemplateEngine
             var provider = new TemplateWriter(writer as TemplateWriter) as TemplateWriter;
             provider.stack = this.stack;
 
-            // otherwise register the writer
+            // register the writer
             this.registeredSections.Add(fieldName, provider);
 
             // add the provider to the current valueSet
-            this.valueSet.FieldWriters.Add(fieldName, new TemplateWriter((TemplateWriter)provider) as ITemplateWriter);
+            this.valueSet.FieldWriters.Add(fieldName, new TemplateWriter(provider) as ITemplateWriter);
 
             // ensure all existing value sets contain the writer
             foreach (var valueSet in this.valueSets)
             {
-                valueSet.FieldWriters.Add(fieldName, new TemplateWriter((TemplateWriter)provider) as ITemplateWriter);
+                valueSet.FieldWriters.Add(fieldName, new TemplateWriter(provider) as ITemplateWriter);
             }
 
             return true;

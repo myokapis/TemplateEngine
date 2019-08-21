@@ -336,6 +336,8 @@ namespace TemplateEngine.Tests
             writer.SelectSection("SECTION1");
             writer.SelectSection("SECTION2");
 
+            //writer.RegisterFieldProvider("Field2", provider);
+
             // select the provider and then select a child section within the provider
             writer.SelectProvider("Field2");
             writer.SelectSection("SECTION1");

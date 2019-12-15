@@ -1,8 +1,5 @@
-﻿// TODO: public methods should get current writer and call protected method
-//       protected methods should all operate against this
-
-/* ****************************************************************************
-Copyright 2018 Gene Graves
+﻿/* ****************************************************************************
+Copyright 2018-2020 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,8 +31,6 @@ namespace TemplateEngine
         private ITemplate template;
         private Dictionary<string, ITemplateWriter> sections;
         private Dictionary<string, ITemplateWriter> registeredSections;
-        //private ITemplateWriter selectedProvider = null;
-        //private string selectedProviderField = null;
         private Stack<ITemplateWriter> stack;
         protected ValueSet valueSet = new ValueSet();
         protected List<ValueSet> valueSets = new List<ValueSet>();
@@ -64,16 +59,12 @@ namespace TemplateEngine
         protected TemplateWriter(ITemplate template, string sectionName)
         {
             this.template = template.GetTemplate(sectionName);
-            //this.stack = 
             this.sections = new Dictionary<string, ITemplateWriter>();
             this.registeredSections = new Dictionary<string, ITemplateWriter>();
             PrepareSections();
             InitializeValueSet();
             this.WriterId = Guid.NewGuid();
         }
-
-        // TODO: change these to Clone() methods and include those in the interface
-        //       make sure all public methods are compatible with any ITemplateWriter
 
         /// <summary>
         /// Creates a new TemplateWriter based on an existing TemplateWriter instance
@@ -87,12 +78,6 @@ namespace TemplateEngine
             this.stack = templateWriter.stack;
             InitializeValueSet();
             this.WriterId = Guid.NewGuid();
-
-            //if (makeRoot)
-            //{
-            //    this.stack = new Stack<ITemplateWriter>();
-            //    stack.Push(this);
-            //}
         }
 
 #if (DEBUG)
@@ -107,8 +92,6 @@ namespace TemplateEngine
         }
 #endif
 
-        //private ITemplateWriter currentWriter => this.stack?.Peek() ?? this;
-
         /// <summary>
         /// Append and deselect all sections in the hierarchy beginning with the current section and ending
         /// at the section designated by the sectionName parameter. If no sectionName parameter is provided
@@ -117,25 +100,15 @@ namespace TemplateEngine
         /// <param name="sectionName">Name of the last section to append</param>
         public void AppendAll(string sectionName = null)
         {
-            //if(this.selectedProvider != null)
-            //{
-            //    this.selectedProvider.AppendAll();
-            //    this.selectedProvider = null;
-            //}
-
             if (this.stack == null) return;
             var continueFlag = true;
 
             while (continueFlag)
             {
-                //var currentWriter = (this.currentWriter as TemplateWriter);
                 var deselectFlag = CurrentWriter.IsProvider || SelectedSectionName != "@MAIN";
                 continueFlag = deselectFlag && (SelectedSectionName != sectionName);
-                //continueFlag = (this.stack.Count > 1) && (SelectedSectionName != sectionName);
-                //currentWriter.AppendSection();
                 AppendSection();
                 if (deselectFlag) DeselectSection();
-                //if (this.stack.Count > 1) DeselectSection();
             }
         }
 
@@ -145,14 +118,6 @@ namespace TemplateEngine
         /// <param name="deselect">Sets the deselect behavior</param>
         public void AppendSection(bool deselect = false)
         {
-            //if(this.selectedProvider != null)
-            //{
-            //    var isRoot = this.selectedProvider.IsRootSelected;
-            //    if (isRoot && deselect) this.selectedProvider = null;
-            //}
-
-            //var currentWriter = (this.currentWriter as TemplateWriter);
-            //currentWriter.AppendSection();
             AppendSection();
             if (deselect) DeselectSection();
         }
@@ -162,21 +127,6 @@ namespace TemplateEngine
         /// </summary>
         public void Clear()
         {
-            //if(this.selectedProvider != null)
-            //{
-            //    this.selectedProvider.Clear();
-            //    return;
-            //}
-
-            //if (this.stack == null || this.currentWriter == this)
-            //{
-            //    InitializeValueSet();
-            //}
-            //else
-            //{
-            //    this.currentWriter.Clear();
-            //}
-
             var currentWriter = (CurrentWriter as TemplateWriter);
             currentWriter.InitializeValueSet();
         }
@@ -188,24 +138,10 @@ namespace TemplateEngine
         /// </summary>
         public void DeselectSection()
         {
-            //if(this.selectedProvider != null)
-            //{
-            //    if(this.selectedProvider.IsRootSelected)
-            //    {
-            //        this.selectedProvider.Clear();
-            //        var parentSection = this.stack.Peek();
-            //        //(parentSection as TemplateWriter).SaveProvider(this.selectedProviderField, this.selectedProvider);
-            //        this.selectedProvider = null;
-            //        this.selectedProviderField = null;
-            //        return;
-            //    }
-
-            //}
-
             if (this.stack.Count == 1) throw new InvalidOperationException("Cannot deselect the parent section");
 
-            //// clear any pending data from the current writer and remove it from the stack
-            //CurrentWriter.Clear();
+            // clear any pending data from the current writer and remove it from the stack
+            CurrentWriter.Clear();
             this.stack.Pop();
         }
 
@@ -218,7 +154,6 @@ namespace TemplateEngine
         public string GetContent(bool appendAll = false)
         {
             if (appendAll && (this.stack != null)) this.AppendAll();
-            //if (appendAll) this.AppendAll();
             var sb = new StringBuilder(this.template.RawLength);
             GetContent(sb);
             return sb.ToString();
@@ -229,45 +164,47 @@ namespace TemplateEngine
         /// </summary>
         /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
         /// <returns><cref="ITemplateWriter" /> for the requested section</returns>
-        public ITemplateWriter GetWriter(string sectionName)
+        protected ITemplateWriter GetSection(string sectionName)
         {
-            ITemplateWriter writer = null;
 
+            // matches current section
             if (this.template.SectionName == sectionName)
+                return this;
+
+            // matches child section
+            if (this.sections.ContainsKey(sectionName))
+                return this.sections[sectionName];
+
+            // matches registered section (field provider)
+            if (this.registeredSections.ContainsKey(sectionName))
+            return this.registeredSections[sectionName];
+            
+            // otherwise delegate the check to each child section
+            foreach (var section in this.sections.Values)
             {
-                // matches current section
-                writer = this;
-            }
-            else if (this.sections.ContainsKey(sectionName))
-            {
-                // matches child section
-                writer = this.sections[sectionName];
-            }
-            else if(this.registeredSections.ContainsKey(sectionName))
-            {
-                // matches registered section (field provider)
-                writer = this.registeredSections[sectionName];
-            }
-            else
-            {
-                // otherwise delegate the check to each child section
-                foreach (var section in this.sections.Values)
-                {
-                    writer = section.GetWriter(sectionName);
-                    if (writer != null) break;
-                }
+                var writer = (section as TemplateWriter)?.GetSection(sectionName);
+                if (writer != null) return writer;
             }
 
-            return writer; // new TemplateWriter(writer as TemplateWriter);
+            return null;
         }
 
         /// <summary>
-        /// Indicates if the template contains any text or fields
+        /// Gets a TemplateWriter for the requested section
         /// </summary>
-        public bool HasData => (this.valueSets.Exists(v => v.FieldValues.Count() > 0))
-            || (!this.template.IsEmpty && !this.template.IsSingleLine);
+        /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
+        /// <returns>Working copy of <cref="ITemplateWriter" /> for the requested section</returns>
+        public ITemplateWriter GetWriter(string sectionName)
+        {
+            return new TemplateWriter(GetSection(sectionName) as TemplateWriter);
+        }
 
-        // TODO: revamp this
+        /// <summary>
+        /// Indicates if the template contains any field data
+        /// </summary>
+        public bool HasData => this.valueSets.Any(v => v?.HasData ?? false);
+
+#if(DEBUG)
         public List<string> Inspect()
         {
             var level = $"{this.WriterId}:{this.SectionName}";
@@ -284,7 +221,6 @@ namespace TemplateEngine
             return inspection;
         }
 
-        // TODO: revamp this
         protected void Inspect(List<string> inspection, string parentLevel)
         {
             var level = $"{parentLevel}--->{this.WriterId}:{this.SectionName}";
@@ -298,44 +234,13 @@ namespace TemplateEngine
                 }
             }
         }
-
-        ///// <summary>
-        ///// Indicates if the currently selected section is a root section
-        ///// </summary>
-        //public bool IsRootSelected
-        //{
-        //    get
-        //    {
-        //        // if a provider is selected then delegate to the provider
-        //        if (this.selectedProvider != null) return this.selectedProvider.IsRootSelected;
-
-        //        // if the current section is the base section then see if the root is selected
-        //        return (this.stack?.Peek()?.SelectedSectionName == "@MAIN");
-        //    }
-        //}
-
-        public bool IsProvider { get; protected set; }
+#endif
 
         /// <summary>
         /// Removes all populated field data and clears the current section
         /// </summary>
         public void Reset()
         {
-            //if (this.stack == null || this.currentWriter == this)
-            //{
-            //    // if this is a child section or if this is the parent section and it is selected then clear the pending data
-            //    this.valueSets.Clear();
-            //    InitializeValueSet();
-            //}
-            //else
-            //{
-            //    // clear all pending data in the selected section
-            //    this.currentWriter.Reset();
-            //}
-            //var currentWriter = this.currentWriter as TemplateWriter;
-            //currentWriter.valueSets.Clear();
-            //currentWriter.InitializeValueSet();
-
             valueSets.Clear();
             InitializeValueSet();
         }
@@ -345,15 +250,26 @@ namespace TemplateEngine
         /// </summary>
         /// <param name="fieldName">Name of the field to be bound</param>
         /// <param name="writer">Writer instance that will provide data for the field</param>
-        /// <returns>The writer instance if registration succeeded</returns>
-        public ITemplateWriter RegisterFieldProvider(string fieldName, ITemplateWriter writer)
+        /// <returns>Indicates if the writer was successfully bound to the field</returns>
+        public bool RegisterFieldProvider(string fieldName, ITemplateWriter writer)
         {
-            var currentWriter = this.CurrentWriter as TemplateWriter;
-
             // skip if the writer is the current writer
-            if (currentWriter == writer) return null;
+            if (this == writer) return false;
 
-            return currentWriter.RegisterFieldProvider(fieldName, writer, this);
+            // skip if registering a template writer for a non-existent field
+            if (!this.template.FieldNames.Contains(fieldName)) return false;
+
+            // skip if the field already has a writer registered to it
+            if (this.registeredSections.ContainsKey(fieldName)) return false;
+
+            // get a new instance of the provider and set its stack
+            var provider = new TemplateWriter(writer as TemplateWriter) as TemplateWriter;
+            provider.stack = this.stack;
+
+            // register the writer
+            this.registeredSections.Add(fieldName, provider);
+
+            return true;
         }
 
         /// <summary>
@@ -362,39 +278,26 @@ namespace TemplateEngine
         /// <param name="sectionName">Name of child section containing the field to be bound</param>
         /// <param name="fieldName">Name of the field to be bound</param>
         /// <param name="writer">Writer instance that will provide data for the field</param>
-        /// <returns>The writer instance if registration succeeded</returns>
-        public ITemplateWriter RegisterFieldProvider(string sectionName, string fieldName, ITemplateWriter writer)
+        /// <returns>Indicates if the writer was successfully bound to the field</returns>
+        public bool RegisterFieldProvider(string sectionName, string fieldName, ITemplateWriter writer)
         {
 
             // delegate the call to a child section if the requested section isn't this section
             if (this.template.SectionName != sectionName)
             {
                 // get the requested child section
-                var childWriter = this.GetWriter(sectionName) as TemplateWriter;
+                var childWriter = this.GetSection(sectionName) as TemplateWriter;
 
                 // skip if registering a template writer for a non-existent section or field
-                if (childWriter == null) return null;
+                if (childWriter == null) return false;
 
                 // delegate the call
-                return childWriter.RegisterFieldProvider(fieldName, writer, this);
+                return childWriter.RegisterFieldProvider(fieldName, writer);
             }
 
             // otherwise register the writer to this section
-            return this.RegisterFieldProvider(fieldName, writer, this);
+            return this.RegisterFieldProvider(fieldName, writer);
         }
-
-        //// TODO: decide if this can be removed or if it needs logic added
-        //protected void SaveProvider(string fieldName, ITemplateWriter writer)
-        //{
-        //    //this.providerSets[fieldName].Add(writer);
-        //    //this.sectionSets[fieldName].Add(writer);
-        //}
-
-        //// TODO: decide if this can be removed
-        //protected void SaveSection(ITemplateWriter writer)
-        //{
-        //    //this.sectionSets[writer.SectionName].Add(writer);
-        //}
 
         /// <summary>
         /// Section name associated with this writer
@@ -408,10 +311,8 @@ namespace TemplateEngine
         public void SelectProvider(string fieldName)
         {
             var cw = CurrentWriter as TemplateWriter;
-            var provider = new TemplateWriter(cw.GetProvider(fieldName) as TemplateWriter);
-            //var writer = new TemplateWriter(provider as TemplateWriter);
+            var provider = cw.GetProvider(fieldName) as TemplateWriter;
             provider.IsProvider = true;
-            //cw.selectedProvider = writer;
             this.stack.Push(provider);
         }
 
@@ -423,7 +324,7 @@ namespace TemplateEngine
         public void SelectSection(string sectionName)
         {
             var currentWriter = CurrentWriter as TemplateWriter;
-            var writer = new TemplateWriter(currentWriter.GetChildSection(sectionName) as TemplateWriter);
+            var writer = currentWriter.GetChildSection(sectionName);
             this.stack.Push(writer);
         }
 
@@ -435,7 +336,6 @@ namespace TemplateEngine
             get
             {
                 var currentTemplate = (this.stack == null) ? this.template : ((TemplateWriter)this.stack.Peek()).template;
-                //return ((TemplateWriter)this.stack.Peek()).template.SectionName;
                 return currentTemplate.SectionName;
             }
         }
@@ -521,12 +421,6 @@ namespace TemplateEngine
                 }
 
                 AppendSection();
-
-                //// TODO: see if this mess is really necessary
-                //var selectedSectionName = this.currentWriter.SelectedSectionName;
-                //DeselectSection();
-                //SelectSection(selectedSectionName);
-
             }
 
             DeselectSection();
@@ -624,29 +518,13 @@ namespace TemplateEngine
         /// <param name="val">Field value</param>
         public void SetField(string key, string val)
         {
-            //if (this.stack == null || this.currentWriter == this)
-            //{
-            //    try
-            //    {
-            //        this.valueSet.FieldValues[key] = val;
-            //    }
-            //    catch (KeyNotFoundException ex)
-            //    {
-            //        var msg = $"The field, {key}, was not found in the selected template.";
-            //        throw new ArgumentException(msg, ex);
-            //    }
-            //}
-            //else
-            //{
-            //    this.currentWriter.SetField(key, val);
-            //}
+            var currentWriter = CurrentWriter as TemplateWriter;
 
             try
             {
-                var currentWriter = CurrentWriter as TemplateWriter;
                 currentWriter.valueSet.FieldValues[key] = val;
             }
-            catch (KeyNotFoundException ex)
+            catch(KeyNotFoundException ex)
             {
                 var msg = $"The field, {key}, was not found in the selected template.";
                 throw new ArgumentException(msg, ex);
@@ -670,17 +548,21 @@ namespace TemplateEngine
         /// </summary>
         public Guid TemplateId => this.template.TemplateId;
 
-        // unique id of this instance
-        public Guid WriterId { get; }
-
         #endregion
 
         #region Protected Methods
 
         protected void AppendSection()
         {
-            this.valueSets.Add(this.valueSet);
-            this.InitializeValueSet();
+            var currentWriter = (CurrentWriter as TemplateWriter);
+            currentWriter.AppendValueSet();
+        }
+
+        protected void AppendValueSet()
+        {
+            if (valueSets == null) valueSets = new List<ValueSet>();
+            valueSets.Add(valueSet);
+            InitializeValueSet();
         }
 
         protected void GetContent(StringBuilder sb)
@@ -709,15 +591,20 @@ namespace TemplateEngine
 
         protected ITemplateWriter GetProvider(string fieldName)
         {
-            try
-            {
-                return this.valueSet.FieldWriters[fieldName];
-            }
-            catch (KeyNotFoundException ex)
+
+            if(this.valueSet.FieldWriters.TryGetValue(fieldName, out var fieldWriter))
+                return fieldWriter;
+
+            if (!this.registeredSections.TryGetValue(fieldName, out var registeredProvider))
             {
                 var msg = $"A registered provider for field, {fieldName}, was not found in this section.";
-                throw new ArgumentException(msg, ex);
+                throw new ArgumentException(msg);
             }
+
+            var provider = new TemplateWriter(registeredProvider as TemplateWriter);
+            this.valueSet.FieldWriters[fieldName] = provider;
+
+            return provider;
         }
 
         protected void InitializeValueSet()
@@ -735,6 +622,8 @@ namespace TemplateEngine
             this.valueSet = valueSet;
         }
 
+        public bool IsProvider {get; protected set;}
+
         // TODO: determine if this is needed any more; why is it necessary to copy the objects?
         protected void PrepareSections()
         {
@@ -746,32 +635,8 @@ namespace TemplateEngine
             }
         }
 
-        protected ITemplateWriter RegisterFieldProvider(string fieldName, ITemplateWriter writer, TemplateWriter delegatingWriter)
-        {
-            // skip if registering a template writer for a non-existent field
-            if (!this.template.FieldNames.Contains(fieldName)) return null;
-
-            // skip if the field already has a writer registered to it
-            if (this.registeredSections.ContainsKey(fieldName)) return null;
-
-            // get a new instance of the provider and set its stack
-            var provider = new TemplateWriter(writer as TemplateWriter); // as TemplateWriter;
-            provider.stack = delegatingWriter.stack;
-
-            // register the writer
-            this.registeredSections.Add(fieldName, provider);
-
-            // add the provider to the current valueSet
-            this.valueSet.FieldWriters.Add(fieldName, new TemplateWriter(provider) as ITemplateWriter);
-
-            // ensure all existing value sets contain the writer
-            foreach (var valueSet in this.valueSets)
-            {
-                valueSet.FieldWriters.Add(fieldName, new TemplateWriter(provider) as ITemplateWriter);
-            }
-
-            return delegatingWriter as ITemplateWriter;
-        }
+        // unique id of this instance
+        public Guid WriterId { get; }
 
         protected void WriteTextBlocks(StringBuilder sb, ValueSet valueSet)
         {
@@ -791,9 +656,10 @@ namespace TemplateEngine
 
                     // get the writer for the given section
                     var writer = valueSet.SectionWriters[textBlock.ReferenceName] as TemplateWriter;
+                    var hasData = writer.HasData;
 
                     // get the extra text for the section to be written
-                    if(writer.template.IsSingleLine && writer.HasData)
+                    if(writer.template.IsSingleLine && hasData && extraText == null)
                     {
                         extraText = this.template.TextBlocks
                             .Where(b => b.ReferenceName == textBlock.ReferenceName
@@ -803,7 +669,7 @@ namespace TemplateEngine
                     }
 
                     // write the extra text for the opening tag
-                    if (extraText != null)
+                    if (extraText != null && hasData)
                     {
                         sb.Append(extraText[0]);
                         sb.Append(extraText[1]);
@@ -812,7 +678,7 @@ namespace TemplateEngine
                     writer.GetContent(sb);
 
                     // write the extra text for the closing tag
-                    if (extraText != null)
+                    if (extraText != null && hasData)
                     {
                         sb.Append(extraText[2]);
                         sb.Append(extraText[3]);
@@ -822,8 +688,8 @@ namespace TemplateEngine
                 {
                     if (this.registeredSections.ContainsKey(textBlock.ReferenceName))
                     {
-                        var writer = valueSet.FieldWriters[textBlock.ReferenceName] as TemplateWriter;
-                        writer.GetContent(sb);
+                        if(valueSet.FieldWriters.TryGetValue(textBlock.ReferenceName, out var writer))
+                            (writer as TemplateWriter).GetContent(sb);
                     }
                     else
                     {

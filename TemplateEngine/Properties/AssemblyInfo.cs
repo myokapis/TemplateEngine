@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyTitle("TemplateEngine")]
 //[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Gene Graves")]
 //[assembly: AssemblyProduct("TemplateEngine")]
 //[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
@@ -34,3 +34,8 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 //[assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyTitle("TemplateEngine")]
+[assembly: AssemblyDescription("Parses text templates and populates template fields with formatted data")]
+[assembly: AssemblyCopyright("Copyright © Gene Graves 2018-2020")]
+[assembly: AssemblyVersion("1.0.0.0")]
+

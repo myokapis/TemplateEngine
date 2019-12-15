@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018 Gene Graves
+Copyright 2018-2020 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,11 +25,6 @@ namespace TemplateEngine.Tests
 
     public class TemplateWriterTests
     {
-        [Fact]
-        public void TestInspect()
-        {
-
-        }
 
         [Fact]
         public void TestAppendAll()
@@ -429,7 +424,6 @@ namespace TemplateEngine.Tests
         [Fact]
         public void TestRepeatedNestedSections()
         {
-            TemplateWriter.EnableTrace = true;
 
             // setup a template and writer
             var tpl = new Template(templateTexts[5]);
@@ -475,11 +469,6 @@ namespace TemplateEngine.Tests
             writer.SetField("Main2", "Value2");
             writer.AppendAll();
             var actual = writer.GetContent();
-
-            using (var file = new StreamWriter(@"C:\Temp\trace.txt"))
-            {
-                TemplateWriter.TraceResults.ForEach(r => file.WriteLine(r));
-            }
                 
             var expected = new List<string>
             {

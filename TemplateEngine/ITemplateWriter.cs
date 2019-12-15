@@ -38,9 +38,9 @@ namespace TemplateEngine
         bool IsProvider { get; }
         //bool IsRootSelected { get; }
 
-        ITemplateWriter RegisterFieldProvider(string fieldName, ITemplateWriter writer);
+        bool RegisterFieldProvider(string fieldName, ITemplateWriter writer);
 
-        ITemplateWriter RegisterFieldProvider(string sectionName, string fieldName, ITemplateWriter writer);
+        bool RegisterFieldProvider(string sectionName, string fieldName, ITemplateWriter writer);
 
         void Reset();
 

@@ -114,7 +114,19 @@ namespace TemplateEngine.Tests
             model1.Should().Equals(accessor1.Model);
         }
 
-        #region "internal classes"
+        [Fact]
+        public void TestStruct()
+        {
+            var model3 = new Model3() { PropertyA = "ValueA", PropertyB = "ValueB" };
+
+            ViewModelAccessor<Model3> accessor1 = new ViewModelAccessor<Model3>(model3);
+
+            model3.PropertyA.Should().BeEquivalentTo(accessor1.Model.PropertyA);
+            model3.PropertyB.Should().BeEquivalentTo(accessor1.Model.PropertyB);
+            model3.Should().Equals(accessor1.Model);
+        }
+
+        #region "internal objects"
 
         public class Model1
         {
@@ -123,6 +135,13 @@ namespace TemplateEngine.Tests
         }
 
         public class Model2
+        {
+            public string PropertyA { get; set; }
+            public string PropertyB { get; set; }
+            public string PropertyC { get; set; }
+        }
+
+        public struct Model3
         {
             public string PropertyA { get; set; }
             public string PropertyB { get; set; }

@@ -23,10 +23,28 @@ using System.Linq;
 namespace TemplateEngine
 {
 
+    /// <summary>
+    /// Interface defining methods and properties of a template cache
+    /// </summary>
     public interface ITemplateCache
     {
+        /// <summary>
+        /// Forces the cache to be flushed of all expired and unexpired cached templates
+        /// </summary>
         void ClearCache();
+
+        /// <summary>
+        /// Retrieves a copy of a template from cache or caches a new copy if the template was not found in the cache
+        /// </summary>
+        /// <param name="fileName">File name of the requested template</param>
+        /// <returns>Copy of a template</returns>
         ITemplate GetTemplate(string fileName);
+
+        /// <summary>
+        /// Flag indicating if the requested template is currently in cache
+        /// </summary>
+        /// <param name="fileName">File name of the requested template</param>
+        /// <returns>True or false</returns>
         bool IsTemplateCached(string fileName);
     }
 
@@ -35,16 +53,35 @@ namespace TemplateEngine
     /// </summary>
     public class TemplateCache : ITemplateCache
     {
+        /// <summary>
+        /// Number of seconds to retain the template in cache
+        /// </summary>
         protected int expiresAfterSeconds;
+
+        /// <summary>
+        /// Number of seconds between attempts to flush the cache
+        /// </summary>
         protected int flushIntervalSeconds;
+
+        /// <summary>
+        /// Last time at which the cache was flushed
+        /// </summary>
         protected DateTime lastFlushTime;
+
+        /// <summary>
+        /// Reference to an object for loading templates
+        /// </summary>
         protected ITemplateLoader templateLoader;
+
+        /// <summary>
+        /// The template cache
+        /// </summary>
         protected ConcurrentDictionary<string, CachedTemplate> cache = new ConcurrentDictionary<string, CachedTemplate>();
 
         /// <summary>
         /// Constructs a new cache object
         /// </summary>
-        /// <param name="templateLoader">An <cref="ITemplateLoader" /> to provide template files for parsing</param>
+        /// <param name="templateLoader">An <see cref="ITemplateLoader" /> to provide template files for parsing</param>
         /// <param name="expiresAfterSeconds">Number of seconds a template is considered fresh within the cache</param>
         /// <param name="flushIntervalSeconds">Number of seconds between cache flushes</param>
         public TemplateCache(ITemplateLoader templateLoader, int expiresAfterSeconds = 120, int flushIntervalSeconds = 120)
@@ -101,12 +138,21 @@ namespace TemplateEngine
 
         #region protected methods
 
+        /// <summary>
+        /// Loads a template from a file and caches the template
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         protected CachedTemplate CreateCachedTemplate(string fileName)
         {
             var template = new Template(this.templateLoader.LoadTemplate(fileName));
             return new CachedTemplate(template, this.expiresAfterSeconds);
         }
 
+        /// <summary>
+        /// Flushes expired entries from the cache
+        /// </summary>
+        /// <param name="forceFlush">Forces all cached entries to be flushed</param>
         protected void FlushCache(bool forceFlush = false)
         {
             lock (this.cache)
@@ -124,15 +170,30 @@ namespace TemplateEngine
 
         #endregion
 
+        /// <summary>
+        /// Contains a template and expiration date
+        /// </summary>
         protected struct CachedTemplate
         {
+            /// <summary>
+            /// Creates an instance
+            /// </summary>
+            /// <param name="template">The template to be cached</param>
+            /// <param name="expiresAfterSeconds">The number of seconds to retain the template in cache</param>
             public CachedTemplate(Template template, int expiresAfterSeconds)
             {
                 this.Template = template;
                 this.Expires = DateTime.UtcNow.AddSeconds(expiresAfterSeconds);
             }
 
+            /// <summary>
+            /// The number of seconds to retain the template in cache
+            /// </summary>
             public DateTime Expires { get; set; }
+
+            /// <summary>
+            /// The template to be cached
+            /// </summary>
             public ITemplate Template { get; set; }
             
         }

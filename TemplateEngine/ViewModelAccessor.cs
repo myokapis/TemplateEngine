@@ -25,6 +25,8 @@ namespace TemplateEngine
 {
 
     // TODO: maybe use Lazy<T> for loading field properties
+    //       also consider whether this is thread safe
+
     /// <summary>
     /// Allows a data object's properties to be accessed by index or name.
     /// Also allows a data object's properties to be iterated.
@@ -105,6 +107,9 @@ namespace TemplateEngine
 
         #region "protected methods"
 
+        /// <summary>
+        /// A collection of <see cref="PropertyInfo"/> for public properties of this class
+        /// </summary>
         protected static List<PropertyInfo> FieldProperties
         {
             get
@@ -114,6 +119,12 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Formats a property's value using a custom format attribute if one exists. Otherwise
+        /// formatting uses the data type's default ToString() behavior.
+        /// </summary>
+        /// <param name="pi">The property whose value will be formatted</param>
+        /// <returns>A formatted string representing the property's value</returns>
         protected string FormatValue(PropertyInfo pi)
         {
             object value = pi.GetValue(Model);
@@ -123,6 +134,10 @@ namespace TemplateEngine
             return formatter == null ? value.ToString() : formatter.FormatData(value);
         }
 
+        /// <summary>
+        /// A static method that finds public properties of the class. Any properties marked with
+        /// a [NotMapped] attribute are ignored.
+        /// </summary>
         protected static void GetFieldProperties()
         {
             _fieldProperties = new List<PropertyInfo>();

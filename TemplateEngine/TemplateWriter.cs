@@ -32,7 +32,15 @@ namespace TemplateEngine
         private Dictionary<string, ITemplateWriter> sections;
         private Dictionary<string, ITemplateWriter> registeredSections;
         private Stack<ITemplateWriter> stack;
+
+        /// <summary>
+        /// The current, unappended value set for this writer
+        /// </summary>
         protected ValueSet valueSet = new ValueSet();
+
+        /// <summary>
+        /// The collection of appended value sets for this writer
+        /// </summary>
         protected List<ValueSet> valueSets = new List<ValueSet>();
 
         /// <summary>
@@ -70,7 +78,7 @@ namespace TemplateEngine
         /// Creates a new TemplateWriter based on an existing TemplateWriter instance
         /// </summary>
         /// <param name="templateWriter">TemplateWriter to clone</param>
-        protected TemplateWriter(TemplateWriter templateWriter) //, bool isProvider = false)
+        protected TemplateWriter(TemplateWriter templateWriter)
         {
             this.template = templateWriter.template;
             this.sections = templateWriter.sections;
@@ -105,7 +113,7 @@ namespace TemplateEngine
 
             while (continueFlag)
             {
-                var deselectFlag = CurrentWriter.IsProvider || SelectedSectionName != "@MAIN";
+                var deselectFlag = this.stack.Count > 1;
                 continueFlag = deselectFlag && (SelectedSectionName != sectionName);
                 AppendSection();
                 if (deselectFlag) DeselectSection();
@@ -131,6 +139,9 @@ namespace TemplateEngine
             currentWriter.InitializeValueSet();
         }
 
+        /// <summary>
+        /// A reference to the currently active template writer
+        /// </summary>
         public ITemplateWriter CurrentWriter => this.stack?.Peek() ?? this;
 
         /// <summary>
@@ -163,7 +174,7 @@ namespace TemplateEngine
         /// Gets a TemplateWriter for the requested section
         /// </summary>
         /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
-        /// <returns><cref="ITemplateWriter" /> for the requested section</returns>
+        /// <returns><see cref="ITemplateWriter" /> for the requested section</returns>
         protected ITemplateWriter GetSection(string sectionName)
         {
 
@@ -193,10 +204,20 @@ namespace TemplateEngine
         /// Gets a TemplateWriter for the requested section
         /// </summary>
         /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
-        /// <returns>Working copy of <cref="ITemplateWriter" /> for the requested section</returns>
-        public ITemplateWriter GetWriter(string sectionName)
+        /// <param name="asMain">When true the writer is created as a standalone writer</param>
+        /// <returns>Working copy of <see cref="ITemplateWriter" /> for the requested section</returns>
+        public ITemplateWriter GetWriter(string sectionName, bool asMain = false)
         {
-            return new TemplateWriter(GetSection(sectionName) as TemplateWriter);
+            var section = GetSection(sectionName) as TemplateWriter;
+            var writer = new TemplateWriter(section);
+
+            if (asMain)
+            {
+                writer.stack = new Stack<ITemplateWriter>();
+                writer.stack.Push(writer);
+            }
+
+            return writer;
         }
 
         /// <summary>
@@ -324,7 +345,8 @@ namespace TemplateEngine
         public void SelectSection(string sectionName)
         {
             var currentWriter = CurrentWriter as TemplateWriter;
-            var writer = currentWriter.GetChildSection(sectionName);
+            var writer = currentWriter.GetChildSection(sectionName) as TemplateWriter;
+            if (writer.stack == null) writer.stack = currentWriter.stack;
             this.stack.Push(writer);
         }
 
@@ -373,6 +395,7 @@ namespace TemplateEngine
         {
             SelectSection(sectionName);
             SetMultiSectionFields(data, null);
+            DeselectSection();
         }
 
         /// <summary>
@@ -381,11 +404,12 @@ namespace TemplateEngine
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="sectionName">Name of the section in which to set fields</param>
         /// <param name="data">Data collection</param>
-        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
             SetMultiSectionFields<T>(data, fieldDefinitions);
+            DeselectSection();
         }
 
         /// <summary>
@@ -393,7 +417,7 @@ namespace TemplateEngine
         /// </summary>
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="data">Data collection</param>
-        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetMultiSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions = null)
         {
             FieldDefinitions definitions = fieldDefinitions ?? new FieldDefinitions();
@@ -423,8 +447,6 @@ namespace TemplateEngine
                 AppendSection();
             }
 
-            DeselectSection();
-
         }
 
         #endregion
@@ -449,7 +471,7 @@ namespace TemplateEngine
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="sectionName">Name of the section to set</param>
         /// <param name="data">Data object</param>
-        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(string sectionName, T data, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
@@ -462,8 +484,8 @@ namespace TemplateEngine
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="sectionName">Name of the section to set</param>
         /// <param name="data">Data object</param>
-        /// <param name="sectionOptions"><cref="SectionOptions" /> for desired append and deselect behavior</param>
-        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="sectionOptions"><see cref="SectionOptions" /> for desired append and deselect behavior</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
         {
             SelectSection(sectionName);
@@ -475,8 +497,8 @@ namespace TemplateEngine
         /// </summary>
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="data">Data object</param>
-        /// <param name="sectionOptions"><cref="SectionOptions" /> for desired append and deselect behavior</param>
-        /// <param name="fieldDefinitions"><cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="sectionOptions"><see cref="SectionOptions" /> for desired append and deselect behavior</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
         {
 
@@ -493,7 +515,10 @@ namespace TemplateEngine
                 }
                 else if (definitions.DropdownFieldNames.Contains(kvp.Key))
                 {
-                    DropdownDefinition definition = definitions.Dropdowns.Where<DropdownDefinition>(d => d.FieldName == kvp.Key).FirstOrDefault<DropdownDefinition>();
+                    DropdownDefinition definition = definitions.Dropdowns
+                        .Where(d => d.FieldName == kvp.Key)
+                        .FirstOrDefault();
+
                     SetOptionFields(definition.SectionName, definition.Data, kvp.Value);
                 }
                 else
@@ -532,7 +557,7 @@ namespace TemplateEngine
         }
 
         /// <summary>
-        /// Sets a field from a string value
+        /// Sets a field from a generic value
         /// </summary>
         /// <typeparam name="T">Type of the field value</typeparam>
         /// <param name="key">Name of the field to set</param>
@@ -552,12 +577,18 @@ namespace TemplateEngine
 
         #region Protected Methods
 
+        /// <summary>
+        /// Appends the current section and optionally deselects the current section.
+        /// </summary>
         protected void AppendSection()
         {
             var currentWriter = (CurrentWriter as TemplateWriter);
             currentWriter.AppendValueSet();
         }
 
+        /// <summary>
+        /// Appends the working value set and initializes a new working value set
+        /// </summary>
         protected void AppendValueSet()
         {
             if (valueSets == null) valueSets = new List<ValueSet>();
@@ -565,6 +596,10 @@ namespace TemplateEngine
             InitializeValueSet();
         }
 
+        /// <summary>
+        /// Iterates the appended value sets and merges their data into the template
+        /// </summary>
+        /// <param name="sb"><see cref="StringBuilder"/> to which the populated template is written</param>
         protected void GetContent(StringBuilder sb)
         {
             // iterate each set of appended data and write a copy of the template containing the data
@@ -576,6 +611,11 @@ namespace TemplateEngine
             Reset();
         }
 
+        /// <summary>
+        /// Returns the template writer for a child section
+        /// </summary>
+        /// <param name="sectionName">The name of the child section</param>
+        /// <returns>The child section's template writer</returns>
         protected ITemplateWriter GetChildSection(string sectionName)
         {
             try
@@ -589,6 +629,11 @@ namespace TemplateEngine
             }
         }
 
+        /// <summary>
+        /// Gets the registered provider for a field
+        /// </summary>
+        /// <param name="fieldName">The name of the field that has the provider registered</param>
+        /// <returns>The template writer registered to the field</returns>
         protected ITemplateWriter GetProvider(string fieldName)
         {
 
@@ -607,6 +652,9 @@ namespace TemplateEngine
             return provider;
         }
 
+        /// <summary>
+        /// Creates and initializes a new working value set
+        /// </summary>
         protected void InitializeValueSet()
         {
             var valueSet = new ValueSet();
@@ -622,8 +670,14 @@ namespace TemplateEngine
             this.valueSet = valueSet;
         }
 
-        public bool IsProvider {get; protected set;}
+        /// <summary>
+        /// Indicates if this template is registered as a field provider
+        /// </summary>
+        public bool IsProvider { get; protected set; }
 
+        /// <summary>
+        /// Adds a child writer to the current writer for each child section in the current template
+        /// </summary>
         // TODO: determine if this is needed any more; why is it necessary to copy the objects?
         protected void PrepareSections()
         {
@@ -635,9 +689,16 @@ namespace TemplateEngine
             }
         }
 
-        // unique id of this instance
+        /// <summary>
+        /// Unique id of this instance
+        /// </summary>
         public Guid WriterId { get; }
 
+        /// <summary>
+        /// Generates output from all of the <see cref="TextBlock"/> in the writer's template
+        /// </summary>
+        /// <param name="sb"><see cref="StringBuilder"/> to which the output will be written</param>
+        /// <param name="valueSet"><see cref="ValueSet"/> to be used for populating the writer's template</param>
         protected void WriteTextBlocks(StringBuilder sb, ValueSet valueSet)
         {
 

@@ -84,7 +84,7 @@ namespace TemplateEngine.Formats
         /// <summary>
         /// Currency format constructor that accepts a number formatter
         /// </summary>
-        /// <param name="formatInfo">A <cref="NumberFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatInfo">A <see cref="NumberFormatInfo" /> to be used for formatting</param>
         public FormatCurrencyAttribute(NumberFormatInfo formatInfo)
         {
             this.FormatInfo = formatInfo;
@@ -132,7 +132,8 @@ namespace TemplateEngine.Formats
         /// <summary>
         /// Date format constructor that accepts a date formatter
         /// </summary>
-        /// <param name="formatInfo">A <cref="DateTimeFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatInfo">A <see cref="DateTimeFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatString">An optional string defining the output format</param>
         public FormatDateAttribute(DateTimeFormatInfo formatInfo, string formatString = null)
         {
             this.FormatInfo = formatInfo;
@@ -198,7 +199,7 @@ namespace TemplateEngine.Formats
         /// <summary>
         /// Integer format constructor that accepts a number formatter
         /// </summary>
-        /// <param name="formatInfo">A <cref="NumberFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatInfo">A <see cref="NumberFormatInfo" /> to be used for formatting</param>
         public FormatIntegerAttribute(NumberFormatInfo formatInfo)
         {
             this.FormatInfo = formatInfo;
@@ -274,7 +275,7 @@ namespace TemplateEngine.Formats
         /// <summary>
         /// Numeric format constructor that accepts a number formatter
         /// </summary>
-        /// <param name="formatInfo">A <cref="NumberFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatInfo">A <see cref="NumberFormatInfo" /> to be used for formatting</param>
         public FormatNumberAttribute(NumberFormatInfo formatInfo)
         {
             this.FormatInfo = formatInfo;
@@ -350,7 +351,8 @@ namespace TemplateEngine.Formats
         /// <summary>
         /// Percentage format constructor that accepts a number formatter
         /// </summary>
-        /// <param name="formatInfo">A <cref="NumberFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatInfo">A <see cref="NumberFormatInfo" /> to be used for formatting</param>
+        /// <param name="formatString">Percentage format string</param>
         public FormatPercentAttribute(NumberFormatInfo formatInfo, string formatString = null)
         {
             this.FormatInfo = formatInfo;

@@ -54,7 +54,7 @@ namespace TemplateEngine
         /// <summary>
         /// Constructor based on an existing section supplemented with information about the closing tag
         /// </summary>
-        /// <param name="sectionInfo">Existing <cref="SectionInfo" /> object</param>
+        /// <param name="sectionInfo">Existing <see cref="SectionInfo" /> object</param>
         /// <param name="closeIndex">Index of the first character of the section closing tag</param>
         /// <param name="closeTag">Text of the section closing tag</param>
         /// <param name="prefix">Whitespace preceding the closing tag</param>

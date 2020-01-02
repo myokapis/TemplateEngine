@@ -51,6 +51,11 @@ namespace TemplateEngine
         /// </summary>
         public static SectionOptions Set { get; }
 
+        /// <summary>
+        /// Protected constructor for generating an instance with specific property settings
+        /// </summary>
+        /// <param name="append">Value to which the Append property will be set</param>
+        /// <param name="deselect">Value to which the Deselect property will be set</param>
         protected SectionOptions(bool append, bool deselect)
         {
             this.Append = append;

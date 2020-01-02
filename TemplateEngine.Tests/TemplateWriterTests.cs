@@ -158,6 +158,178 @@ namespace TemplateEngine.Tests
         }
 
         [Fact]
+        public void TestDocumentation_BindingDataExample1()
+        {
+            var template = new Template(templateTexts[9]);
+            var writer = new TemplateWriter(template);
+
+            var data = new MyModel { FirstName = "Ichabod", LastName = "Crane" };
+
+            // the writer selects the section, binds the data, then deselects the section
+            writer.SetSectionFields("ROW", data);
+
+            writer.AppendAll();
+            var actuals = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "<h1>Example</h1>",
+                "",
+                "<table>",
+                "  <thead>",
+                "    <tr>",
+                "      <th>First Name</th>",
+                "      <th>Last Name</th>",
+                "    </tr>",
+                "  </thead>",
+                "  <tbody>",
+                "    <tr>",
+                "      <td>Ichabod</td>",
+                "      <td>Crane</td>",
+                "    </tr>",
+                "  </tbody>",
+                "</table>"
+            }.Concat("\r\n");
+
+            actuals.Should().Be(expected);
+        }
+
+        [Fact]
+        public void TestDocumentation_BindingDataExample2()
+        {
+            var template = new Template(templateTexts[9]);
+            var writer = new TemplateWriter(template);
+
+            // create a collection of data
+            var data = new List<MyModel>
+            {
+                new MyModel { FirstName = "Ichabod", LastName = "Crane" },
+                new MyModel { FirstName = "Alex", LastName = "Rodriguez" }
+            };
+
+            // the writer selects the ROW section, binds data and appends the section once for each object in the collection, and then deselects the section
+            writer.SetMultiSectionFields("ROW", data);
+
+            writer.AppendAll();
+            var actuals = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "<h1>Example</h1>",
+                "",
+                "<table>",
+                "  <thead>",
+                "    <tr>",
+                "      <th>First Name</th>",
+                "      <th>Last Name</th>",
+                "    </tr>",
+                "  </thead>",
+                "  <tbody>",
+                "    <tr>",
+                "      <td>Ichabod</td>",
+                "      <td>Crane</td>",
+                "    </tr>",
+                "    <tr>",
+                "      <td>Alex</td>",
+                "      <td>Rodriguez</td>",
+                "    </tr>",
+                "  </tbody>",
+                "</table>"
+            }.Concat("\r\n");
+
+            actuals.Should().Be(expected);
+        }
+
+        [Fact]
+        public void TestDocumentation_OptionsExample()
+        {
+            var templateText = new List<string>
+            {
+                "<select>",
+                "  <!-- @@OPTIONS_DEMO@@ --><option value=\"@@VALUE@@\" @@SELECTED@@>@@TEXT@@</option><!-- @@OPTIONS_DEMO@@ -->",
+                "</select>"
+            }.Concat("\r\n");
+
+            var template = new Template(templateText);
+            var writer = new TemplateWriter(template);
+
+            // create a collection of options
+            var data = new List<Option>
+            {
+                new Option { Text = "Small", Value = "S" },
+                new Option { Text = "Medium", Value = "M" },
+                new Option { Text = "Large", Value = "L" }
+            };
+
+            // writer selects the OPTIONS_DEMO section, binds data and appends the section once for each item in the data collection, then deselects the section
+            // the optional third argument specifies the value of the option that should be initially selected
+            writer.SetOptionFields("OPTIONS_DEMO", data, "M");
+
+            writer.AppendAll();
+            var actuals = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "<select>\r\n",
+                "  <option value=\"S\" >Small</option>",
+                "<option value=\"M\" selected='selected'>Medium</option>",
+                "<option value=\"L\" >Large</option>\r\n",
+                "</select>"
+            }.Concat();
+
+            actuals.Should().Be(expected);
+        }
+
+        [Fact]
+        public void TestDocumentation_SectionsExample()
+        {
+            var template = new Template(templateTexts[9]);
+            var writer = new TemplateWriter(template);
+
+            // select a section so that it can be worked with
+            writer.SelectSection("ROW");
+
+            // bind data to the section fields and append the content
+            writer.SetField("FirstName", "Ichabod");
+            writer.SetField("LastName", "Crane");
+            writer.AppendSection();
+
+            // bind data to the section fields and append the content
+            writer.SetField("FirstName", "Alex");
+            writer.SetField("LastName", "Rodriguez");
+            writer.AppendSection(true);
+            writer.AppendSection();
+
+            var actuals = writer.GetContent();
+
+            var expected = new List<string>
+            {
+                "<h1>Example</h1>",
+                "",
+                "<table>",
+                "  <thead>",
+                "    <tr>",
+                "      <th>First Name</th>",
+                "      <th>Last Name</th>",
+                "    </tr>",
+                "  </thead>",
+                "  <tbody>",
+                "    <tr>",
+                "      <td>Ichabod</td>",
+                "      <td>Crane</td>",
+                "    </tr>",
+                "    <tr>",
+                "      <td>Alex</td>",
+                "      <td>Rodriguez</td>",
+                "    </tr>",
+                "  </tbody>",
+                "</table>"
+            }.Concat("\r\n");
+
+            actuals.Should().Be(expected);
+        }
+
+        [Fact]
         public void TestDeselectSection()
         {
             // create a template and writer for the test
@@ -253,18 +425,109 @@ namespace TemplateEngine.Tests
         }
 
         [Fact]
+        public void TestGetContent_NotFromMain()
+        {
+            // create a template and writer for the test
+            var tpl = new Template(this.templateTexts[4]);
+            var writer = new TemplateWriter(tpl);
+
+            // set fields in main
+            writer.SetField("Main1", "Text1");
+            writer.SetField("Main2", "Text2");
+
+            // select section 3 and append all sections
+            writer.SelectSection("SECTION3");
+            writer.AppendAll();
+
+            // return to section 3
+            writer.SelectSection("SECTION3");
+
+            // get content without returning to main
+            var actual = writer.GetContent();
+
+            var expected = string.Concat("Main1: Text1\r\n",
+                "  section 3 text\r\n",
+                "Main2: Text2");
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
         public void TestGetWriter()
         {
             // create a template and writer for the test
-            var tpl = new Template(this.templateTexts[0]);
+            var tpl = new Template(this.templateTexts[5]);
             var wrt = new TemplateWriter(tpl);
 
-            // call the method under text and get the content for the template
-            var wrt2 = wrt.GetWriter("SECTION2");
-            wrt2.AppendSection();
+            // get a new standalone writer for a specific section
+            var wrt2 = wrt.GetWriter("SECTION2", true);
+
+            //set fields in the current section
+            wrt2.SetField("Field2_1", "Value2_1");
+            wrt2.SetField("Field2_2", "Value2_2");
+
+            // select a subsection and populate its fields
+            wrt2.SelectSection("SECTION3");
+            wrt2.SetField("Field3_1", "Value3_1");
+            wrt2.AppendAll();
+
+            var expected = new List<string>
+            {
+                "  Field2.1: Value2_1\r\n",
+                "  section 3 text\r\n",
+                " Field3.1: Value3_1\r\n",
+                "  Field2.2: Value2_2\r\n",
+            }.Concat();
+
             var actual = wrt2.GetContent();
 
-            actual.Should().BeEquivalentTo("  section 2 text\r\n");
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void TestNestedFieldProviders()
+        {
+            // create a template and main writer for the test
+            var tpl = new Template(this.templateTexts[6]);
+            var writer = new TemplateWriter(tpl);
+
+            // create a writer to serve as a provider and register it with the main writer
+            var provider1 = new TemplateWriter(tpl);
+            writer.RegisterFieldProvider("Field1", provider1);
+
+            // set values in the main writer
+            writer.SetField("SectionName", "Main Writer");
+
+            // select the first provider and set values in it
+            writer.SelectProvider("Field1");
+            writer.SetField("SectionName", "Provider 1");
+
+            // create a writer to serve as a provider and register it with the first provider
+            var provider2 = new TemplateWriter(tpl);
+            writer.CurrentWriter.RegisterFieldProvider("Field1", provider2);
+
+            // select the second provider and set values in it
+            writer.SelectProvider("Field1");
+            writer.SetField("SectionName", "Provider 2");
+            writer.SetField("Field1", "Actual field value");
+
+            // append all the way out of the providers and the writer
+            writer.AppendAll();
+
+            var expected = new List<string>
+            {
+                "Start of section Main Writer",
+                "Start of section Provider 1",
+                "Start of section Provider 2",
+                "Actual field value",
+                "End of section Provider 2",
+                "End of section Provider 1",
+                "End of section Main Writer"
+            }.Concat();
+
+            var actual = writer.GetContent();
+
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -943,7 +1206,8 @@ namespace TemplateEngine.Tests
 
             // set a section for each row of data
             writer.SelectSection("SECTION3");
-            writer.SetMultiSectionFields<Data>(data, definitions);
+            writer.SetMultiSectionFields(data, definitions);
+            writer.DeselectSection();
             writer.AppendAll();
             var content = writer.GetContent();
 
@@ -981,6 +1245,42 @@ namespace TemplateEngine.Tests
 
             content.Should().Be(expected);
         }
+
+        [Fact]
+        public void TestSetMultiSectionFields_WithStandaloneWriter()
+        {
+            // setup a template and get a standalone writer
+            var tpl = new Template(templateTexts[1]);
+            var writer = new TemplateWriter(tpl).GetWriter("SECTION2", true);
+
+            // setup data
+            var data = new List<Data>
+            {
+                new Data("1", "Val4", "value 3-1", "value 4-1", "true", "false"),
+                new Data("2", "Val3", "value 3-2", "value 4-2", "0", "1"),
+                new Data("3", "Val2", "value 3-3", "value 4-3", "T", "F"),
+                new Data("4", "Val1", "value 3-4", "value 4-4", "f", "t"),
+            };
+
+            // set a section for each row of data
+            writer.SetMultiSectionFields(data);
+            var content = writer.GetContent();
+
+            var expected = new List<string>
+            {
+            "  Field1: 1\r\n",
+            "  Field2: Val4\r\n",
+            "  Field1: 2\r\n",
+            "  Field2: Val3\r\n",
+            "  Field1: 3\r\n",
+            "  Field2: Val2\r\n",
+            "  Field1: 4\r\n",
+            "  Field2: Val1\r\n"
+            }.Concat();
+
+            content.Should().Be(expected);
+        }
+
 
         [Fact]
         public void TestSetSectionFields_WithName()
@@ -1377,7 +1677,28 @@ namespace TemplateEngine.Tests
                 "<link rel=\"stylesheet\" href=\"Content/Import.css\" />",
                 "<script type=\"text/javascript\" src=\"Scripts/App/import.js\"></script>",
                 "<!-- @@HEAD@@ -->"
-            }.Concat()
+            }.Concat(),
+            new List<string>
+            {
+                "<h1>Example</h1>",
+                "@@PROVIDER@@",
+                "<table>",
+                "  <thead>",
+                "    <tr>",
+                "      <th>First Name</th>",
+                "      <th>Last Name</th>",
+                "    </tr>",
+                "  </thead>",
+                "  <tbody>",
+                "    <!-- @@ROW@@ -->",
+                "    <tr>",
+                "      <td>@@FirstName@@</td>",
+                "      <td>@@LastName@@</td>",
+                "    </tr>",
+                "    <!-- @@ROW@@ -->",
+                "  </tbody>",
+                "</table>"
+            }.Concat("\r\n")
         };
 
         #endregion
@@ -1400,6 +1721,12 @@ namespace TemplateEngine.Tests
             public string Field4 { get; set; }
             public string Field5 { get; set; }
             public string Field6 { get; set; }
+        }
+
+        private class MyModel
+        {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
         }
 
     }

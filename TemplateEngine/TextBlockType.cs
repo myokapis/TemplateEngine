@@ -22,11 +22,34 @@ namespace TemplateEngine
     /// </summary>
     public enum TextBlockType
     {
+        /// <summary>
+        /// A template field that can be populated with data
+        /// </summary>
         Field = 1,
+
+        /// <summary>
+        /// Whitespace prefixing a section
+        /// </summary>
         Prefix = 2,
+
+        /// <summary>
+        /// A placeholder for a section
+        /// </summary>
         Section = 4,
+
+        /// <summary>
+        /// An opening or closing section tag
+        /// </summary>
         SectionTag = 8,
+
+        /// <summary>
+        /// Whitespacing following a section
+        /// </summary>
         Suffix = 16,
+
+        /// <summary>
+        /// A block of text within a section
+        /// </summary>
         Text = 32
     }
 

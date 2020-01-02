@@ -20,9 +20,21 @@ using System.IO;
 namespace TemplateEngine
 {
 
+    /// <summary>
+    /// Interface defining a template loader
+    /// </summary>
     public interface ITemplateLoader
     {
+        /// <summary>
+        /// Reads a template file and returns the contents
+        /// </summary>
+        /// <param name="fileName">The name of the file to be loaded</param>
+        /// <returns>String representation of the contents of the template file</returns>
         string LoadTemplate(string fileName);
+
+        /// <summary>
+        /// The default template directory
+        /// </summary>
         string TemplateDirectory { get; }
     }
 

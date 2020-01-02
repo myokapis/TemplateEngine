@@ -83,6 +83,13 @@ namespace TemplateEngine
     /// </summary>
     public readonly struct DropdownDefinition
     {
+        /// <summary>
+        /// Contains data and metadata for populating a dropdown
+        /// </summary>
+        /// <param name="sectionName">Template section containing the dropdown</param>
+        /// <param name="fieldName">Field name from an external dataset that will provide the
+        /// default value for the dropdown</param>
+        /// <param name="data">The text and value pairs for each dropdown option</param>
         public DropdownDefinition(string sectionName, string fieldName, List<Option> data)
         {
             this.Data = data;
@@ -90,8 +97,19 @@ namespace TemplateEngine
             this.SectionName = sectionName;
         }
 
+        /// <summary>
+        /// Text and value pairs for creating each dropdown option
+        /// </summary>
         public List<Option> Data { get; }
+
+        /// <summary>
+        /// Field name from an external dataset that will provide the default value for the dropdown
+        /// </summary>
         public string FieldName { get; }
+
+        /// <summary>
+        /// Template section containing the dropdown
+        /// </summary>
         public string SectionName { get; }
     }
 
@@ -100,7 +118,14 @@ namespace TemplateEngine
     /// </summary>
     public class Option
     {
+        /// <summary>
+        /// The text to be displayed in the dropdown option
+        /// </summary>
         public string Text { get; set; }
+
+        /// <summary>
+        /// The value associated with the dropdown option
+        /// </summary>
         public string Value { get; set; }
     }
 

@@ -32,8 +32,20 @@ namespace TemplateEngine
     public class Template : ITemplate
     {
         private List<string> fieldNames;
+
+        /// <summary>
+        /// Collection of parsed text blocks
+        /// </summary>
         protected List<TextBlock> textBlocks;
+
+        /// <summary>
+        /// Collection of child templates referenced by section name
+        /// </summary>
         protected Dictionary<string, Template> templates;
+
+        /// <summary>
+        /// Raw length of the string from which the template was parsed
+        /// </summary>
         protected int rawLength;
 
         // TODO: consider making the regex a property having a default value to allow users to set their own regex
@@ -153,7 +165,7 @@ namespace TemplateEngine
         /// <summary>
         /// Creates a copy of this template
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A copy of the current template</returns>
         public ITemplate Copy()
         {
             return new Template(this);
@@ -211,11 +223,19 @@ namespace TemplateEngine
 
         #region Protected Methods
 
+        /// <summary>
+        /// True if all text type text blocks contain no text
+        /// </summary>
+        /// <returns></returns>
         protected bool CheckForEmpty()
         {
             return !this.TextBlocks.Any(b => b.Type == TextBlockType.Text && b.Text.Length > 0);
         }
 
+        /// <summary>
+        /// Checks if this section exists in a single line of the template
+        /// </summary>
+        /// <returns>True if this section exists in a single line of the template</returns>
         protected bool CheckForSingleLine()
         {
             if (this.ChildSectionNames.Count > 0) return false;
@@ -242,6 +262,13 @@ namespace TemplateEngine
             return true;
         }
 
+        /// <summary>
+        /// Parses a template section to find all subsections
+        /// </summary>
+        /// <param name="parentSection">A <see cref="SectionInfo"/> for the section to be parsed</param>
+        /// <param name="allSections">A collection of <see cref="SectionInfo"/> representing all
+        /// sections in the template</param>
+        /// <returns></returns>
         protected List<SectionInfo> GetSubSections(in SectionInfo parentSection, in IEnumerable<SectionInfo> allSections)
         {
             (int parentStart, int parentEnd) = parentSection.SubstringRange;
@@ -264,6 +291,10 @@ namespace TemplateEngine
             return subSections;
         }
 
+        /// <summary>
+        /// Sets initial values for properties and members
+        /// </summary>
+        /// <param name="sectionName"></param>
         protected void Init(string sectionName)
         {
             this.fieldNames = new List<string>();
@@ -272,6 +303,10 @@ namespace TemplateEngine
             this.SectionName = sectionName;
         }
 
+        /// <summary>
+        /// Parses a section of text from a template
+        /// </summary>
+        /// <param name="innerText">The text to be parsed</param>
         protected void ParseInnerText(in string innerText)
         {
             // bail out if there is no text to parse
@@ -316,6 +351,14 @@ namespace TemplateEngine
 
         }
 
+        /// <summary>
+        /// Parses a section with respect to its subsections
+        /// </summary>
+        /// <param name="allText">The full text used to generate the template</param>
+        /// <param name="sectionName">The section being parsed</param>
+        /// <param name="sectionList">A collection of section names</param>
+        /// <param name="sectionLookup">A collection of <see cref="SectionInfo"/> representing
+        /// all sections in the template</param>
         protected void ParseSections(in string allText, string sectionName, in List<string> sectionList,
             in Dictionary<string, SectionInfo> sectionLookup)
         {
@@ -365,6 +408,10 @@ namespace TemplateEngine
 
         }
 
+        /// <summary>
+        /// Parses text into sections and subsections
+        /// </summary>
+        /// <param name="text">The text to be parsed</param>
         protected void ParseTemplateFromText(string text)
         {
             List<string> sectionList = new List<string>() { "@MAIN" };
@@ -385,9 +432,8 @@ namespace TemplateEngine
                 var prefix = match.Groups["prefix"]?.Value ?? "";
                 var suffix = match.Groups["suffix"]?.Value ?? "";
                 var tag = match.Groups["body"].Value;
-                SectionInfo sectionInfo;
 
-                if (sectionLookup.TryGetValue(sectionName, out sectionInfo))
+                if (sectionLookup.TryGetValue(sectionName, out var sectionInfo))
                 {
                     // if the section has already been created then update the section based on the closing tag
                     var newSectionInfo = new SectionInfo(sectionInfo, match.Index, tag, prefix, suffix);
@@ -408,6 +454,10 @@ namespace TemplateEngine
 
         }
 
+        /// <summary>
+        /// Applies rules to ensure all section definitions are valid
+        /// </summary>
+        /// <param name="sectionInfos">The collection of <see cref="SectionInfo"/> to be validated</param>
         protected void ValidateSections(IEnumerable<SectionInfo> sectionInfos)
         {
 
@@ -443,6 +493,11 @@ namespace TemplateEngine
 
         #endregion
 
+        /// <summary>
+        /// Calculates an MD5 hash code from a string
+        /// </summary>
+        /// <param name="text">The string to be hashed</param>
+        /// <returns>An MD5 hash code</returns>
         protected static string CalculateHashCode(in string text)
         {
             using (var md5 = MD5.Create())

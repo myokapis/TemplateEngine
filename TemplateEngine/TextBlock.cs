@@ -25,7 +25,7 @@ namespace TemplateEngine
         /// <summary>
         /// Creates a new text block
         /// </summary>
-        /// <param name="type">Enum <cref="TextBlockType" /> for the type of the text block</param>
+        /// <param name="type">Enum <see cref="TextBlockType" /> for the type of the text block</param>
         /// <param name="text">Text belonging to the block</param>
         /// <param name="referenceName">The name associated with the text block</param>
         /// <param name="tagText">Text associated with the section tag</param>
@@ -53,7 +53,7 @@ namespace TemplateEngine
         public string Text { get; }
 
         /// <summary>
-        /// Enum <cref="TextBlockType" /> for the type of the text block
+        /// Enum <see cref="TextBlockType" /> for the type of the text block
         /// </summary>
         public TextBlockType Type { get; }
     }

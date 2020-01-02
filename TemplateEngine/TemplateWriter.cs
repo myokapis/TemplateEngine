@@ -78,7 +78,7 @@ namespace TemplateEngine
         /// Creates a new TemplateWriter based on an existing TemplateWriter instance
         /// </summary>
         /// <param name="templateWriter">TemplateWriter to clone</param>
-        protected TemplateWriter(TemplateWriter templateWriter)
+        protected TemplateWriter(TemplateWriter templateWriter) //, bool isProvider = false)
         {
             this.template = templateWriter.template;
             this.sections = templateWriter.sections;
@@ -138,6 +138,8 @@ namespace TemplateEngine
             var currentWriter = (CurrentWriter as TemplateWriter);
             currentWriter.InitializeValueSet();
         }
+
+        public ITemplateWriter CurrentWriter => this.stack?.Peek() ?? this;
 
         /// <summary>
         /// A reference to the currently active template writer

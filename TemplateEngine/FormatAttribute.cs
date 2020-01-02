@@ -134,6 +134,7 @@ namespace TemplateEngine.Formats
         /// </summary>
         /// <param name="formatInfo">A <see cref="DateTimeFormatInfo" /> to be used for formatting</param>
         /// <param name="formatString">An optional string defining the output format</param>
+
         public FormatDateAttribute(DateTimeFormatInfo formatInfo, string formatString = null)
         {
             this.FormatInfo = formatInfo;

@@ -81,6 +81,7 @@ namespace TemplateEngine
         /// <param name="fieldName">Name of the field to be bound</param>
         /// <param name="writer">Writer instance that will provide data for the field</param>
         /// <returns>Indicates if the writer was successfully bound to the field</returns>
+
         bool RegisterFieldProvider(string fieldName, ITemplateWriter writer);
 
         /// <summary>

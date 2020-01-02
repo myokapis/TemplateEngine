@@ -531,6 +531,52 @@ namespace TemplateEngine.Tests
         }
 
         [Fact]
+        public void TestNestedFieldProviders()
+        {
+            // create a template and main writer for the test
+            var tpl = new Template(this.templateTexts[6]);
+            var writer = new TemplateWriter(tpl);
+
+            // create a writer to serve as a provider and register it with the main writer
+            var provider1 = new TemplateWriter(tpl);
+            writer.RegisterFieldProvider("Field1", provider1);
+
+            // set values in the main writer
+            writer.SetField("SectionName", "Main Writer");
+
+            // select the first provider and set values in it
+            writer.SelectProvider("Field1");
+            writer.SetField("SectionName", "Provider 1");
+
+            // create a writer to serve as a provider and register it with the first provider
+            var provider2 = new TemplateWriter(tpl);
+            writer.CurrentWriter.RegisterFieldProvider("Field1", provider2);
+
+            // select the second provider and set values in it
+            writer.SelectProvider("Field1");
+            writer.SetField("SectionName", "Provider 2");
+            writer.SetField("Field1", "Actual field value");
+
+            // append all the way out of the providers and the writer
+            writer.AppendAll();
+
+            var expected = new List<string>
+            {
+                "Start of section Main Writer",
+                "Start of section Provider 1",
+                "Start of section Provider 2",
+                "Actual field value",
+                "End of section Provider 2",
+                "End of section Provider 1",
+                "End of section Main Writer"
+            }.Concat();
+
+            var actual = writer.GetContent();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
         public void TestRegisterFieldProvider_Child()
         {
             // create a template and main writer for the test

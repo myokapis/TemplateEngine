@@ -139,8 +139,6 @@ namespace TemplateEngine
             currentWriter.InitializeValueSet();
         }
 
-        public ITemplateWriter CurrentWriter => this.stack?.Peek() ?? this;
-
         /// <summary>
         /// A reference to the currently active template writer
         /// </summary>

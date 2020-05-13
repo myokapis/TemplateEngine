@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateEngine", "TemplateEngine\TemplateEngine.csproj", "{3BA40ACD-8BD5-4216-9DD8-56A02D795CE9}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine", "TemplateEngine\TemplateEngine.csproj", "{3BA40ACD-8BD5-4216-9DD8-56A02D795CE9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateEngine.Tests", "TemplateEngine.Tests\TemplateEngine.Tests.csproj", "{812B49ED-3286-45C7-BB51-2CFA24196F83}"
 EndProject
@@ -22,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {33814344-EEBA-436A-8D6A-D54E8CE3C980}
 	EndGlobalSection
 EndGlobal

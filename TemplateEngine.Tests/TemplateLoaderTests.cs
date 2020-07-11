@@ -16,6 +16,7 @@ limitations under the License.
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
@@ -35,7 +36,23 @@ namespace TemplateEngine.Tests
             UseTempFile(fileName, fileData, () =>
             {
                 var loader = new TemplateLoader(Path.GetTempPath());
-                actual = loader.LoadTemplate(fileName);
+                actual = loader.LoadTemplateText(fileName);
+            });
+
+            actual.Should().Be(fileData);
+        }
+
+        [Fact]
+        public async Task TestLoadTemplateAsync()
+        {
+            var fileName = "template.txt";
+            var fileData = "template data for test";
+            string actual = null;
+
+            UseTempFile(fileName, fileData, async () =>
+            {
+                var loader = new TemplateLoader(Path.GetTempPath());
+                actual = await loader.LoadTemplateTextAsync(fileName);
             });
 
             actual.Should().Be(fileData);

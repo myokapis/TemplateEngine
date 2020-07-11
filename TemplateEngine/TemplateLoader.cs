@@ -16,6 +16,7 @@ limitations under the License.
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace TemplateEngine
 {
@@ -30,7 +31,14 @@ namespace TemplateEngine
         /// </summary>
         /// <param name="fileName">The name of the file to be loaded</param>
         /// <returns>String representation of the contents of the template file</returns>
-        string LoadTemplate(string fileName);
+        string LoadTemplateText(string fileName);
+
+        /// <summary>
+        /// Reads a template file and returns the contents asynchronously
+        /// </summary>
+        /// <param name="fileName">The name of the file to be loaded</param>
+        /// <returns>String representation of the contents of the template file</returns>
+        Task<string> LoadTemplateTextAsync(string fileName);
 
         /// <summary>
         /// The default template directory
@@ -63,10 +71,21 @@ namespace TemplateEngine
         /// </summary>
         /// <param name="fileName">File name of the requested template</param>
         /// <returns>The contents of the template file as text</returns>
-        public string LoadTemplate(string fileName)
+        public string LoadTemplateText(string fileName)
         {
             var filePath = Path.Combine(this.TemplateDirectory, fileName);
             return File.ReadAllText(filePath);
+        }
+
+        /// <summary>
+        /// Locates the requested template file and returns the contents asynchronously
+        /// </summary>
+        /// <param name="fileName">File name of the requested template</param>
+        /// <returns>The contents of the template file as text</returns>
+        public async Task<string> LoadTemplateTextAsync(string fileName)
+        {
+            var filePath = Path.Combine(this.TemplateDirectory, fileName);
+            return await File.ReadAllTextAsync(filePath);
         }
 
         /// <summary>

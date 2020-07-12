@@ -182,7 +182,7 @@ var partialWriter = writer.GetWriter("ROW");
 There are a few important methods that have not previously been discussed.
 - AppendAll - appends and deselects nested template sections until it reaches the main section. An optional parameter can be provided that will cause it to stop when it reaches a particular section. 
 - Clear - clears any unappended data from working memory in the currently selected section.
-- GetContent - generates the text ouput containing all of the appended sections and bound data.
+- GetContent - generates the text output containing all of the appended sections and bound data.
 - Reset - clears all appended and unappended data in the currently selected section.
 - SelectProvider - gets the writer that was registered as a field provider for a given field.
 

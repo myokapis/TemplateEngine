@@ -18,7 +18,7 @@ Using the TemplateEngine library involves these steps:
 5. Render the output via the GetContent writer method
 
 ## Template Document
-A template document is a text files that contain text to be rendered along with special markup to indicate fields that can be replaced with data. Template documents can be partitioned into sections for greater control over rendering. Sections may even be nested in order to create hierarchical documents.
+A template document is a text file that contains text to be rendered along with special markup to indicate fields that can be replaced with data. Template documents can be partitioned into sections for greater control over rendering. Sections may even be nested in order to create hierarchical documents.
 
 A simple template document might look like this:
 ```html

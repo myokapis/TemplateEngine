@@ -16,39 +16,19 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text;
+using TemplateEngine.Loader;
+using TemplateEngine.Web;
 
-namespace TemplateEngine
+namespace TemplateEngine.Tests.Helpers
 {
 
-    public static class Extensions
+    internal class ContentPresenter : MasterPresenterBase
     {
 
-        public static string Concat(this IEnumerable<string> collection, string separator = "")
+        public ContentPresenter(ITemplateCache<IWebWriter> templateCache) : base(templateCache)
         {
-            return string.Join(separator, collection);
-        }
 
-        public static void Iterate<T>(this IEnumerable<T> items, Action<T, int> action)
-        {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                action(item, i);
-                i++;
-            }
-        }
-
-        public static async Task IterateAsync<T>(this IEnumerable<T> items, Func<T, int, Task> action)
-        {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                await action(item, i);
-                i++;
-            }
         }
 
     }

@@ -16,41 +16,38 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text;
+using LazyCache;
+using TemplateEngine.Document;
 
-namespace TemplateEngine
+namespace TemplateEngine.Tests.Helpers
 {
 
-    public static class Extensions
+    public class TestAppCache : CachingService
     {
+        protected Dictionary<string, ITemplate> dic = new Dictionary<string, ITemplate>();
 
-        public static string Concat(this IEnumerable<string> collection, string separator = "")
+        public virtual void Add<T>(string key, T item)
         {
-            return string.Join(separator, collection);
+            dic.TryAdd(key, (ITemplate)item);
         }
 
-        public static void Iterate<T>(this IEnumerable<T> items, Action<T, int> action)
+        public override T Get<T>(string key)
         {
-            var i = 0;
+            dic.TryGetValue(key, out var template);
+            return (T)template;
+        }
 
-            foreach (var item in items)
+        public virtual T GetOrAdd<T>(string key, Func<string, T> factory)
+        {
+            if (!dic.TryGetValue(key, out var template))
             {
-                action(item, i);
-                i++;
+                template = (ITemplate)factory.Invoke(key);
+                dic.Add(key, template);
             }
+
+            return (T)template;
         }
-
-        public static async Task IterateAsync<T>(this IEnumerable<T> items, Func<T, int, Task> action)
-        {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                await action(item, i);
-                i++;
-            }
-        }
-
     }
 
 }

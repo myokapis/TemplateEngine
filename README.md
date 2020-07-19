@@ -17,6 +17,8 @@ Using the TemplateEngine library involves these steps:
 4. Use the TemplateWriter methods to bind data and manipulate content
 5. Render the output via the GetContent writer method
 
+For additional documentation and a working website built on the TemplateEngine library, see the ExampleWebSite project in the [TemplateEngine](https://github.com/myokapis/TemplateEngine) solution.
+
 ## Template Document
 A template document is a text file that contains text to be rendered along with special markup to indicate fields that can be replaced with data. Template documents can be partitioned into sections for greater control over rendering. Sections may even be nested in order to create hierarchical documents.
 
@@ -41,7 +43,7 @@ A simple template document might look like this:
   </tbody>
 </table>
 ```
-This example template document contains three fields (PROVIDER, FirstName, and LastName) and one section (ROW). Fields are designate with a pair of @@ symbols surrounding the field name. Valid characters for field names are Latin alphanumeric characters a-z, A-Z, and 0-9 as well as the underscore (\_). Sections are designated with a pair of @@ symbols surrounding the section name. Valid characters for section names are uppercase Latin alphanumeric characters A-Z and 0-9 as well as the underscore (\_). Section names must be enclosed in an html comment ```<!-- -->``` in order to differentiate section names from field names. Each section must be enclosed in a pair of section names in order to mark the beginning and the end of the section. Sections may be nested; however, they are not allowed to overlap.
+This example template document contains three fields (PROVIDER, FirstName, and LastName) and one section (ROW). Fields are designated with a pair of @@ symbols surrounding the field name. Valid characters for field names are Latin alphanumeric characters a-z, A-Z, and 0-9 as well as the underscore (\_). Sections are designated with a pair of @@ symbols surrounding the section name. Valid characters for section names are uppercase Latin alphanumeric characters A-Z and 0-9 as well as the underscore (\_). Section names must be enclosed in an html comment ```<!-- -->``` in order to differentiate section names from field names. Each section must be enclosed in a pair of section names in order to mark the beginning and the end of the section. Sections may be nested; however, they are not allowed to overlap.
 
 ## Template Class
 The Template class parses and validates a template document. Instantiating a template instance is done as follows:

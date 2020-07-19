@@ -14,41 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using ExampleWebSite.Models;
+using ExampleWebSite.Presenters;
+using ExampleWebSite.Services;
 
-namespace TemplateEngine
+namespace ExampleWebSite.Controllers
 {
 
-    public static class Extensions
+    public class HomeController : ControllerBase
     {
+        private readonly HomePresenter presenter;
 
-        public static string Concat(this IEnumerable<string> collection, string separator = "")
+        public HomeController(HomePresenter presenter, IDataService dataService) : base(dataService)
         {
-            return string.Join(separator, collection);
+            this.presenter = presenter;
         }
 
-        public static void Iterate<T>(this IEnumerable<T> items, Action<T, int> action)
+        /// <summary>
+        /// Generates a view for the entire page
+        /// </summary>
+        /// <param name="pageScope">A custom class for persisting data between pages</param>
+        /// <returns>A task containing html from a view</returns>
+        public async Task<IActionResult> Index(PageScope pageScope = null)
         {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                action(item, i);
-                i++;
-            }
-        }
-
-        public static async Task IterateAsync<T>(this IEnumerable<T> items, Func<T, int, Task> action)
-        {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                await action(item, i);
-                i++;
-            }
+            return Html(await presenter.Index(GetPageScope(pageScope)));
         }
 
     }

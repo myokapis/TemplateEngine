@@ -1,0 +1,115 @@
+﻿.content-section-div {
+    height: calc(90% - 8px);
+    overflow-y: hidden;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin: 18px auto 0px auto;
+    background-color: #FFE6E6;
+    min-width: 40%;
+    max-width: 80%;
+    color: #500;
+}
+
+.selector-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 4px;
+    font-size: medium;
+    font-weight: 600;
+}
+
+.items-div {
+    overflow-y: auto;
+}
+
+.item-container {
+    border-bottom: solid 1px #555555;
+    padding: 4px 0px 6px 0px;
+    margin: 8px 0px 12px 0px;
+    display: block;
+}
+
+.columns {
+    display: flex;
+    flex-direction: row;
+	gap: 12px;
+}
+
+.columns div {
+	width: 49%;
+}
+
+.content {
+	padding: 4px;
+}
+
+h3 {
+	margin: 0px 0px 4px 0px;
+	padding: 0px;
+}
+
+.item-headline {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+	padding: 2px 0px;
+}
+
+.animal-headline {
+	display: flex;
+	align-items: baseline;
+	/*margin: 0px 4px 0px 4px;*/
+}
+
+.item-container img {
+    height: 50px;
+    width: 50px;
+	margin: 2px 0px 0px 6px;
+}
+
+.submit-div {
+    margin-top: 12px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    align-self: baseline;
+}
+
+#selectButton {
+    font-weight: 500;
+    font-size: medium;
+    padding: 2px 8px;
+    margin: 4px 0px;
+    color: #500;
+}
+
+.popup-content {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.popup-item {
+    display: flex;
+    flex-direction: column;
+    border-top: solid 1px #555555;
+    padding: 4px 0px 4px 0px;
+}
+
+.popup-item div {
+    margin: 4px;
+}
+
+.popup-item div:nth-of-type(1) {
+    font-size: larger;
+    font-weight: 600;
+}

@@ -14,41 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using FluentAssertions;
+using TemplateEngine.Writer;
+using Xunit;
 
-namespace TemplateEngine
+namespace TemplateEngine.Tests
 {
 
-    public static class Extensions
+    public class SectionOptionsTests
     {
 
-        public static string Concat(this IEnumerable<string> collection, string separator = "")
+        [Fact]
+        public void TestSectionOptions_AppendDeselect()
         {
-            return string.Join(separator, collection);
+            var option = SectionOptions.AppendDeselect;
+            option.Append.Should().Be(true);
+            option.Deselect.Should().Be(true);
         }
 
-        public static void Iterate<T>(this IEnumerable<T> items, Action<T, int> action)
+        [Fact]
+        public void TestSectionOptions_AppendOnly()
         {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                action(item, i);
-                i++;
-            }
+            var option = SectionOptions.AppendOnly;
+            option.Append.Should().Be(true);
+            option.Deselect.Should().Be(false);
         }
 
-        public static async Task IterateAsync<T>(this IEnumerable<T> items, Func<T, int, Task> action)
+        [Fact]
+        public void TestSectionOptions_Set()
         {
-            var i = 0;
-
-            foreach (var item in items)
-            {
-                await action(item, i);
-                i++;
-            }
+            var option = SectionOptions.Set;
+            option.Append.Should().Be(false);
+            option.Deselect.Should().Be(false);
         }
 
     }

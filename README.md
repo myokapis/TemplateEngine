@@ -17,6 +17,8 @@ Using the TemplateEngine library involves these steps:
 4. Use the TemplateWriter methods to bind data and manipulate content
 5. Render the output via the GetContent writer method
 
+For additional documentation and a working website built on the TemplateEngine library, see the ExampleWebSite project in the [TemplateEngine](https://github.com/myokapis/TemplateEngine) solution.
+
 ## Template Document
 A template document is a text file that contains text to be rendered along with special markup to indicate fields that can be replaced with data. Template documents can be partitioned into sections for greater control over rendering. Sections may even be nested in order to create hierarchical documents.
 

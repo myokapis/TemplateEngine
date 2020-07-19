@@ -14,41 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using FluentAssertions;
+using TemplateEngine.Web;
+using Xunit;
 
-namespace TemplateEngine
+namespace TemplateEngine.Tests.WebTests
 {
-
-    public static class Extensions
+    public class DropdownDefinitionTests
     {
 
-        public static string Concat(this IEnumerable<string> collection, string separator = "")
+        [Fact]
+        public void TestInitialization()
         {
-            return string.Join(separator, collection);
-        }
+            var fieldName = "Field1";
+            var sectionName = "Section1";
 
-        public static void Iterate<T>(this IEnumerable<T> items, Action<T, int> action)
-        {
-            var i = 0;
-
-            foreach (var item in items)
+            var data = new List<Option>
             {
-                action(item, i);
-                i++;
-            }
-        }
+                new Option{ Text = "", Value = "" },
+                new Option{ Text = "", Value = "" },
+                new Option{ Text = "", Value = "" }
+            };
 
-        public static async Task IterateAsync<T>(this IEnumerable<T> items, Func<T, int, Task> action)
-        {
-            var i = 0;
+            var dropdownDefinition = new DropdownDefinition(sectionName, fieldName, data);
 
-            foreach (var item in items)
-            {
-                await action(item, i);
-                i++;
-            }
+            dropdownDefinition.Data.Should().BeSameAs(data);
+            dropdownDefinition.FieldName.Should().BeSameAs(fieldName);
+            dropdownDefinition.SectionName.Should().BeSameAs(sectionName);
         }
 
     }

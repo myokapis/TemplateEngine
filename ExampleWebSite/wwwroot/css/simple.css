@@ -1,0 +1,85 @@
+﻿.content-section-div {
+    height: calc(90% - 8px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+    padding: 10px;
+    margin: 18px auto 0px auto;
+    background-color: #FFE6E6;
+    min-width: 40%;
+    max-width: 80%;
+    color: #500;
+}
+
+.selector-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 4px;
+    font-size: medium;
+    font-weight: 600;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+caption {
+    margin: 8px auto;
+    font-weight: 500;
+    font-size: larger;
+    color: #500;
+}
+
+th, td {
+    padding: 4px;
+    text-align: left;
+    border: solid 1px #AAAAAA;
+    vertical-align: top;
+    color: #500;
+}
+
+td:nth-of-type(2) {
+    white-space: nowrap;
+}
+
+.submit-div {
+    margin-top: 12px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#selectButton {
+    font-weight: 500;
+    font-size: medium;
+    padding: 2px 8px;
+    color: #500;
+}
+
+.popup-content {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.popup-item {
+    display: flex;
+    flex-direction: column;
+    border-top: solid 1px #555555;
+    padding: 4px 0px 4px 0px;
+}
+
+.popup-item div {
+    margin: 4px;
+}
+
+.popup-item div:nth-of-type(1) {
+    font-size: larger;
+    font-weight: 600;
+}

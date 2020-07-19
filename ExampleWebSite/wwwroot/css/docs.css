@@ -1,0 +1,149 @@
+﻿.content-section-div {
+    height: calc(90% - 8px);
+    overflow-y: hidden;
+    overflow-x: hidden;
+    display: block;
+    padding: 10px;
+    margin: 18px auto 0px auto;
+    background-color: #FFE6E6;
+    min-width: 80%;
+    max-width: 90%;
+    color: #500;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: 100%;
+    height: calc(90% - 14px);
+    border: solid 1px black;
+    margin-bottom: 12px;
+}
+
+.topics
+{
+    min-width: 20%;
+    max-width: 40%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+}
+
+.topics-header {
+    background: #EED5D5;
+    border-radius: 4px;
+    font-weight: 600;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.topics-scroll {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+dl
+{
+    margin: 0px;
+    padding: 4px 2px 22px 2px;
+}
+
+dt
+{
+    cursor: pointer;
+    font-weight: 600;
+}
+
+dd
+{
+    cursor: pointer;
+    margin-left: 12px;
+    font-style: italic;
+}
+
+.topic-view {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 3;
+    padding: 4px;
+}
+
+.topic-sections
+{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.topic-text
+{
+    display: block;
+    flex-grow: 1;
+    padding: 6px 0px 4px 0px;
+}
+
+h4 {
+    font-style: italic;
+    padding: 6px 0px 4px 0px;
+    margin: 0px;
+}
+
+.emphasis {
+    font-weight: 500;
+    font-style: italic;
+}
+
+.topic-text p
+{
+    margin: 2px 2px 4px 2px;
+}
+
+.subtopic-text
+{
+    display: block;
+    margin: 2px 2px 4px 2px;
+}
+
+ul, ol
+{
+    margin-top: 0px;
+}
+
+.caption {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+code
+{
+    background-color: #EEEEEE;
+    padding: 4px;
+    white-space: nowrap;
+}
+
+.code
+{
+    background-color: #EEEEEE;
+    padding: 6px 12px;
+    display: inline-flex;
+    max-width: 90%;
+    overflow: auto;
+}
+
+pre
+{
+    margin: 8px;
+}
+
+.page-scope {
+    display: none;
+}
+
+.hidden {
+    display: none;
+}

@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ namespace TemplateEngine.AspNetCore
     /// </summary>
     public class TemplateEngineSettings
     {
-        
+
         /// <summary>
         /// The full path to the directory from which templates can be read
         /// </summary>
-        public string TemplateDirectory { get; set; }
+        public string TemplateDirectory { get; set; } = DefaultDirectoryName;
 
         /// <summary>
         /// Enables or disables caching in the template loader
@@ -41,7 +41,7 @@ namespace TemplateEngine.AspNetCore
         /// <summary>
         /// A helper property representing the default directory name
         /// </summary>
-        private static object Templates { get; }
+        private static object Templates { get; } = nameof(Templates);
     }
 
 }

@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
-using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -40,13 +38,13 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public void TestGetWriter()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
 
-            mocks.FileNames.Iterate((f, i) =>
+            TemplateMocks.FileNames.Iterate((f, i) =>
             {
                 var writer = loader.GetWriter(f);
-                var templateText = mocks.TemplateText.ElementAt(i);
+                var templateText = TemplateMocks.TemplateText.ElementAt(i);
                 writer.GetContent().Should().Be(templateText);
             });
         }
@@ -54,13 +52,13 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public async Task TestGetWriterAsync()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
 
-            await mocks.FileNames.IterateAsync(async (f, i) =>
+            await TemplateMocks.FileNames.IterateAsync(async (f, i) =>
             {
                 var writer = await loader.GetWriterAsync(f);
-                var templateText = mocks.TemplateText.ElementAt(i);
+                var templateText = TemplateMocks.TemplateText.ElementAt(i);
                 writer.GetContent().Should().Be(templateText);
             });
         }
@@ -68,13 +66,13 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public void TestGetTemplate()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
 
-            mocks.FileNames.Iterate((f, i) =>
+            TemplateMocks.FileNames.Iterate((f, i) =>
             {
                 var template = loader.GetTemplate(f);
-                var templateText = mocks.TemplateText.ElementAt(i);
+                var templateText = TemplateMocks.TemplateText.ElementAt(i);
                 template.ToString().Should().Be(templateText);
             });
         }
@@ -82,13 +80,13 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public async Task TestGetTemplateAsync()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
 
-            await mocks.FileNames.IterateAsync(async (f, i) =>
+            await TemplateMocks.FileNames.IterateAsync(async (f, i) =>
             {
                 var template = await loader.GetTemplateAsync(f);
-                var templateText = mocks.TemplateText.ElementAt(i);
+                var templateText = TemplateMocks.TemplateText.ElementAt(i);
                 template.ToString().Should().Be(templateText);
             });
         }
@@ -96,13 +94,13 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public void TestGetTemplateText()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
 
-            mocks.FileNames.Iterate((f, i) =>
+            TemplateMocks.FileNames.Iterate((f, i) =>
             {
                 var templateText = loader.GetTemplateText(f);
-                var expectedText = mocks.TemplateText.ElementAt(i);
+                var expectedText = TemplateMocks.TemplateText.ElementAt(i);
                 templateText.Should().Be(expectedText);
             });
         }
@@ -110,13 +108,13 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public async Task TestGetTemplateTextAsync()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
 
-            await mocks.FileNames.IterateAsync(async (f, i) =>
+            await TemplateMocks.FileNames.IterateAsync(async (f, i) =>
             {
                 var templateText = await loader.GetTemplateTextAsync(f);
-                var expectedText = mocks.TemplateText.ElementAt(i);
+                var expectedText = TemplateMocks.TemplateText.ElementAt(i);
                 templateText.Should().Be(expectedText);
             });
         }
@@ -124,7 +122,7 @@ namespace TemplateEngine.Tests.LoaderTests
         [Fact]
         public void TestTemplateDirectory()
         {
-            var loader = new TemplateLoader<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var loader = new TemplateLoaderBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object);
             loader.TemplateDirectory.Should().Be(mocks.TemplateDirectory);
         }

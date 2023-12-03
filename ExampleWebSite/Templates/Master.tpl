@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <!--
 /* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ limitations under the License.
     @@BODY@@
     </div>
     <div class="footer-div">
-        <div>Copyright: Gene Graves 2017-2022 </div>
+        <div>Copyright: Gene Graves 2017-2023 </div>
     </div>
     @@TAIL@@
     <div id="errorDialog" style="display: none;">

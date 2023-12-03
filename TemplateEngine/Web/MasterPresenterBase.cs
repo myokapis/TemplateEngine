@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ using TemplateEngine.Writer;
 namespace TemplateEngine.Web
 {
 
-    // TODO: have master presenter register field providers with matching sections at root. also render in auto methods.
+    // TODO: Have master presenter register field providers with matching sections at root.
+    //       Also render in auto methods.
 
     /// <summary>
     /// A base presenter with helper methods to set up a master page and bind
@@ -42,12 +43,12 @@ namespace TemplateEngine.Web
         /// <summary>
         /// The writer to provide content for the master template markup fields
         /// </summary>
-        protected IWebWriter contentWriter;
+        protected IWebWriter? contentWriter;
 
         /// <summary>
         /// The writer holding the master template
         /// </summary>
-        protected IWebWriter masterWriter;
+        protected IWebWriter? masterWriter;
 
         /// <summary>
         /// A template loader for loading the master template, content template, and
@@ -62,7 +63,7 @@ namespace TemplateEngine.Web
         /// A template loader for loading the master template, content template, and
         /// other templates as needed
         /// </param>
-        public MasterPresenterBase(ITemplateCache<IWebWriter> templateLoader)
+        public MasterPresenterBase(ITemplateLoader<IWebWriter> templateLoader)
         {
             this.templateLoader = templateLoader;
         }
@@ -73,6 +74,9 @@ namespace TemplateEngine.Web
         /// <returns>The generated content from the master writer</returns>
         protected string GetContent()
         {
+            if (masterWriter == null)
+                throw new ApplicationException(messages["NoMasterWriter"]);
+
             masterWriter.AppendAll();
             return masterWriter.GetContent();
         }
@@ -94,6 +98,9 @@ namespace TemplateEngine.Web
         /// <returns>The master writer</returns>
         protected IWebWriter SetupMasterPage()
         {
+            if (contentWriter == null)
+                throw new ApplicationException(messages["NoContentWriter"]);
+
             var head = contentWriter.ContainsSection(Head) ? Head : null;
             var body = contentWriter.ContainsSection(Body) ? Body : null;
             var tail = contentWriter.ContainsSection(Tail) ? Tail : null;
@@ -116,8 +123,11 @@ namespace TemplateEngine.Web
         /// section of the master template
         /// </param>
         /// <returns>The master writer</returns>
-        protected IWebWriter SetupMasterPage(string headSection = null, string bodySection = null, string tailSection = null)
+        protected IWebWriter SetupMasterPage(string? headSection = null, string? bodySection = null, string? tailSection = null)
         {
+            if (contentWriter == null)
+                throw new ApplicationException(messages["NoContentWriter"]);
+
             var head = headSection != null ? contentWriter.GetWriter(headSection) as IWebWriter : null;
             var body = bodySection != null ? (IWebWriter)contentWriter.GetWriter(bodySection) : null;
             var tail = tailSection != null ? contentWriter.GetWriter(tailSection) as IWebWriter : null;
@@ -131,8 +141,11 @@ namespace TemplateEngine.Web
         /// <param name="body">The writer to provide content for the body section of the master template</param>
         /// <param name="tail">The writer to provide content for the tail section of the master template</param>
         /// <returns>The master writer</returns>
-        protected IWebWriter SetupMasterPage(IWebWriter head = null, IWebWriter body = null, IWebWriter tail = null)
+        protected IWebWriter SetupMasterPage(IWebWriter? head = null, IWebWriter? body = null, IWebWriter? tail = null)
         {
+            if (masterWriter == null)
+                throw new ApplicationException(messages["NoMasterWriter"]);
+
             masterWriter.Reset();
 
             // reset all providers
@@ -173,6 +186,9 @@ namespace TemplateEngine.Web
         /// <returns>The master writer</returns>
         protected async Task WriteMasterSectionAsync(string providerName, Func<IWebWriter, Task> pageBuilder)
         {
+            if (masterWriter == null)
+                throw new ApplicationException(messages["NoMasterWriter"]);
+
             masterWriter.SelectProvider(providerName);
             await pageBuilder.Invoke(masterWriter);
             masterWriter.AppendSection(true);
@@ -184,6 +200,9 @@ namespace TemplateEngine.Web
         /// <param name="providerName">The name of the field provider that will supply the content</param>
         protected void WriteMasterSection(string providerName)
         {
+            if (masterWriter == null)
+                throw new ApplicationException(messages["NoMasterWriter"]);
+
             masterWriter.SelectProvider(providerName);
             masterWriter.AppendSection(true);
         }
@@ -197,6 +216,9 @@ namespace TemplateEngine.Web
         /// <returns>The master writer</returns>
         protected void WriteMasterSection(string providerName, Action<IWebWriter> pageBuilder)
         {
+            if (masterWriter == null)
+                throw new ApplicationException(messages["NoMasterWriter"]);
+
             masterWriter.SelectProvider(providerName);
             pageBuilder.Invoke(masterWriter);
             masterWriter.AppendSection(true);
@@ -207,6 +229,9 @@ namespace TemplateEngine.Web
         /// </summary>
         protected void WriteMasterSections()
         {
+            if (contentWriter == null)
+                throw new ApplicationException(messages["NoContentWriter"]);
+
             Sections.ForEach(section =>
             {
                 if (contentWriter.ContainsSection(section))
@@ -215,25 +240,34 @@ namespace TemplateEngine.Web
         }
 
         /// <summary>
+        /// DRY set of messages
+        /// </summary>
+        protected static Dictionary<string, string> messages = new()
+        {
+            { "NoMasterWriter", "No master writer has been loaded for this presenter." },
+            { "NoContentWriter", "No content writer has been loaded for this presenter." }
+        };
+
+        /// <summary>
         /// A customizable helper property that provides a default name for the body section
         /// </summary>
-        protected static string Body { get; } = nameof(Body).ToUpper();
+        public static string Body { get; } = nameof(Body).ToUpper();
 
         /// <summary>
         /// A customizable helper property that provides a default name for the head section
         /// </summary>
-        protected static string Head { get; } = nameof(Head).ToUpper();
+        public static string Head { get; } = nameof(Head).ToUpper();
 
         /// <summary>
         /// A customizable helper property that provides a default name for the tail section
         /// </summary>
-        protected static string Tail { get; } = nameof(Tail).ToUpper();
+        public static string Tail { get; } = nameof(Tail).ToUpper();
 
         /// <summary>
         /// A customizable helper property that provides a default set of names for the default
         /// master template sections
         /// </summary>
-        protected List<string> Sections { get; set; } = new List<string>{ Head, Body, Tail};
+        public List<string> Sections { get; set; } = new List<string>{ Head, Body, Tail};
 
     }
 

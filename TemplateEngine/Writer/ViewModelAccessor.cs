@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ using TemplateEngine.Formatters;
 namespace TemplateEngine.Writer
 {
 
-    // TODO: maybe use Lazy<T> for loading field properties
-    //       also consider whether this is thread safe
+    // TODO: consider whether this is thread safe
 
     /// <summary>
     /// Allows a data object's properties to be accessed by index or name.
@@ -34,10 +33,11 @@ namespace TemplateEngine.Writer
     /// <typeparam name="T">Type of the data object</typeparam>
     public class ViewModelAccessor<T>
     {
-
-        private static List<PropertyInfo> fieldProperties = null;
         private static object[] indexes = new object[] { };
 
+        private static Lazy<PropertyInfo[]> fieldProperties =
+            new Lazy<PropertyInfo[]>(GetFieldProperties, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+        
         /// <summary>
         /// Creates a model accessor from a data object
         /// </summary>
@@ -50,13 +50,7 @@ namespace TemplateEngine.Writer
         /// <summary>
         /// Count of accessible property fields on the data object
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return FieldProperties.Count;
-            }
-        }
+        public int Count => fieldProperties.Value.Length;
 
         /// <summary>
         /// A collection of key-value pairs containing each field name and its corresponding value
@@ -65,7 +59,7 @@ namespace TemplateEngine.Writer
         {
             get
             {
-                foreach (PropertyInfo pi in FieldProperties)
+                foreach (PropertyInfo pi in fieldProperties.Value)
                 {
                     yield return new KeyValuePair<string, string>(pi.Name, FormatValue(pi));
                 }
@@ -86,7 +80,7 @@ namespace TemplateEngine.Writer
         {
             get
             {
-                var pi = FieldProperties.ElementAt(fieldIndex);
+                var pi = fieldProperties.Value.ElementAt(fieldIndex);
                 return FormatValue(pi);
             }
         }
@@ -100,24 +94,17 @@ namespace TemplateEngine.Writer
         {
             get
             {
-                PropertyInfo pi = FieldProperties.Where(p => p.Name == fieldName).FirstOrDefault();
+                var pi = fieldProperties.Value.First(p => p.Name == fieldName);
                 return FormatValue(pi);
             }
         }
 
         #region "protected methods"
 
-        /// <summary>
-        /// A collection of <see cref="PropertyInfo"/> for public properties of this class
-        /// </summary>
-        protected static List<PropertyInfo> FieldProperties
-        {
-            get
-            {
-                if (fieldProperties == null) GetFieldProperties();
-                return fieldProperties;
-            }
-        }
+        ///// <summary>
+        ///// A collection of <see cref="PropertyInfo"/> for public properties of this class
+        ///// </summary>
+        //protected static PropertyInfo[] FieldProperties => fieldProperties.Value;
 
         /// <summary>
         /// Formats a property's value using a custom format attribute if one exists. Otherwise
@@ -127,25 +114,30 @@ namespace TemplateEngine.Writer
         /// <returns>A formatted string representing the property's value</returns>
         protected string FormatValue(PropertyInfo pi)
         {
-            object value = pi.GetValue(Model);
+            object? value = pi.GetValue(Model);
             if (value == null) return "";
 
-            var formatter = (FormatAttribute)Attribute.GetCustomAttribute(pi, typeof(FormatAttribute));
-            return formatter == null ? value.ToString() : formatter.FormatData(value);
+            FormatAttribute? formatter = (Attribute.GetCustomAttribute(pi, typeof(FormatAttribute)) as FormatAttribute);
+            var formattedValue = (formatter == null) ? value.ToString() : formatter.FormatData(value);
+            return formattedValue ?? "";
         }
 
         /// <summary>
         /// A static method that finds public properties of the class. Any properties marked with
         /// a [NotMapped] attribute are ignored.
         /// </summary>
-        protected static void GetFieldProperties()
+        protected static PropertyInfo[] GetFieldProperties()
         {
-            fieldProperties = new List<PropertyInfo>();
+            //fieldProperties = new List<PropertyInfo>();
 
-            foreach (PropertyInfo pi in typeof(T).GetProperties())
-            {
-                if (!Attribute.IsDefined(pi, typeof(NotMappedAttribute))) fieldProperties.Add(pi);
-            }
+            //foreach (PropertyInfo pi in typeof(T).GetProperties())
+            //{
+            //    if (!Attribute.IsDefined(pi, typeof(NotMappedAttribute))) fieldProperties.Add(pi);
+            //}
+            return typeof(T).GetProperties()
+                .Where(pi => !Attribute.IsDefined(pi, typeof(NotMappedAttribute)))
+                .ToArray();
+
         }
 
         #endregion

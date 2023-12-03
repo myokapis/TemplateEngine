@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,23 +36,15 @@ namespace TemplateEngine.Web
         /// Constructs a new WebWriter for a template
         /// </summary>
         /// <param name="template">The template on which the writer will operate</param>
-        public WebWriter(ITemplate template)
+        public WebWriter(ITemplate template) : base(template, new SectionGroup(), new SectionGroup())
         {
-            this.template = template;
-            stack = new Stack<ITemplateWriter>();
-            stack.Push(this);
-            sections = new SectionGroup();
-            registeredSections = new SectionGroup();
-
             foreach (var sectionName in template.ChildSectionNames)
             {
                 var childWriter = new WebWriter(template.GetTemplate(sectionName), stack);
                 sections.Add(sectionName, childWriter);
             }
 
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
-            WriteLiteralTextBlock = WriteLiteralText;
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -60,22 +52,15 @@ namespace TemplateEngine.Web
         /// </summary>
         /// <param name="template">The template on which the writer will operate</param>
         /// <param name="stack">The stack from the parent template</param>
-        protected WebWriter(ITemplate template, Stack<ITemplateWriter> stack)
+        protected WebWriter(ITemplate template, Stack<ITemplateWriter> stack) : base(template, new SectionGroup(), new SectionGroup(), stack)
         {
-            this.template = template;
-            sections = new SectionGroup();
-            registeredSections = new SectionGroup();
-
             foreach (var sectionName in template.ChildSectionNames)
             {
                 var childWriter = new WebWriter(template.GetTemplate(sectionName));
-                childWriter.stack = stack;
                 sections.Add(sectionName, childWriter);
             }
 
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
-            WriteLiteralTextBlock = WriteLiteralText;
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -84,16 +69,10 @@ namespace TemplateEngine.Web
         /// <param name="template">The ITemplate to be managed by the writer</param>
         /// <param name="sections">The standard sections included in the writer</param>
         /// <param name="registeredSections">Any registered sections to be included in the writer</param>
-        protected WebWriter(ITemplate template, SectionGroup sections, SectionGroup registeredSections)
+        protected WebWriter(ITemplate template, SectionGroup sections, SectionGroup registeredSections) :
+            base(template, sections, registeredSections)
         {
-            this.template = template;
-            this.sections = sections;
-            this.registeredSections = registeredSections;
-            stack = new Stack<ITemplateWriter>();
-            stack.Push(this);
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
-            WriteLiteralTextBlock = WriteLiteralText;
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -103,16 +82,8 @@ namespace TemplateEngine.Web
         /// <param name="sections">The standard sections included in the writer</param>
         /// <param name="registeredSections">Any registered sections to be included in the writer</param>
         /// <param name="stack">The initialized hierarchy of template writers</param>
-        protected WebWriter(ITemplate template, SectionGroup sections, SectionGroup registeredSections, Stack<ITemplateWriter> stack)
-        {
-            this.template = template;
-            this.sections = sections;
-            this.registeredSections = registeredSections;
-            this.stack = stack;
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
-            WriteLiteralTextBlock = WriteLiteralText;
-        }
+        protected WebWriter(ITemplate template, SectionGroup sections, SectionGroup registeredSections, Stack<ITemplateWriter> stack) :
+            base(template, sections, registeredSections, stack) {}
 
         /// <summary>
         /// Creates a shallow copy of a TemplateWriter instance.
@@ -132,7 +103,7 @@ namespace TemplateEngine.Web
         /// <param name="val">Field value</param>
         public override void SetField(string key, string val)
         {
-            var currentWriter = CurrentWriter as WebWriter;
+            var currentWriter = (WebWriter)CurrentWriter;
 
             try
             {
@@ -204,7 +175,7 @@ namespace TemplateEngine.Web
         /// <param name="data">Data object</param>
         /// <param name="sectionOptions"><see cref="SectionOptions" /> for desired append and deselect behavior</param>
         /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
-        public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions = null)
+        public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions)
         {
             SelectSection(sectionName);
             SetSectionFields(data, sectionOptions, fieldDefinitions);
@@ -238,7 +209,7 @@ namespace TemplateEngine.Web
         /// <param name="sectionName">Name of the option section</param>
         /// <param name="data">Option data</param>
         /// <param name="selectedValue">Value of the selected option</param>
-        public void SetOptionFields(string sectionName, IEnumerable<Option> data, string selectedValue = null)
+        public void SetOptionFields(string sectionName, IEnumerable<Option> data, string? selectedValue = null)
         {
             SelectSection(sectionName.ToUpper());
 
@@ -246,7 +217,10 @@ namespace TemplateEngine.Web
             {
                 SetField("TEXT", option.Text);
                 SetField("VALUE", option.Value);
-                SetField("SELECTED", (option.Value == selectedValue) ? "selected='selected'" : "");
+
+                if(selectedValue != null)
+                    SetField("SELECTED", (option.Value == selectedValue) ? "selected='selected'" : "");
+
                 AppendSection();
             }
 
@@ -287,7 +261,7 @@ namespace TemplateEngine.Web
         /// </summary>
         /// <param name="sb">The string builder to receive the literal text</param>
         /// <param name="textBlock">A text block containing the literal text</param>
-        protected static void WriteLiteralText(StringBuilder sb, TextBlock textBlock)
+        protected override void WriteLiteralTextBlock(StringBuilder sb, TextBlock textBlock)
         {
             sb.Append(HttpUtility.HtmlEncode(textBlock.Text));
         }

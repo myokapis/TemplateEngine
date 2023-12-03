@@ -3,11 +3,11 @@
         <IsPackable>true</IsPackable>
     </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>1.0.0</Version>
+    <TargetFramework>net6.0</TargetFramework>
+    <Version>6.0.0</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <OutputType>Library</OutputType>
-    <Copyright>Copyright © Gene Graves 2018-2022</Copyright>
+    <Copyright>Copyright © Gene Graves 2018-2023</Copyright>
     <Description>Dependency injection extensions for including TemplateEngine in Asp.Net Core applications</Description>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/myokapis/TemplateEngine</PackageProjectUrl>
@@ -18,15 +18,16 @@
     <PackageTags>TemplateEngine</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>6.0.0.0</AssemblyVersion>
+    <FileVersion>6.0.0.0</FileVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.22" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

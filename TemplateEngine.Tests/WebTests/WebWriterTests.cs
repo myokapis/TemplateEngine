@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -92,6 +92,34 @@ namespace TemplateEngine.Tests
             }.Concat();
 
             actuals.Should().Be(expected);
+        }
+
+        [Fact]
+        public void TestGetContent_NotFromMain()
+        {
+            // create a template and writer for the test
+            var tpl = new Template(templateTexts[4]);
+            var writer = new WebWriter(tpl);
+
+            // set fields in main
+            writer.SetField("Main1", "Text1");
+            writer.SetField("Main2", "Text2");
+
+            // select section 3 and append all sections
+            writer.SelectSection("SECTION3");
+            writer.AppendAll();
+
+            // return to section 3
+            writer.SelectSection("SECTION3");
+
+            // get content without returning to main
+            var actual = writer.GetContent();
+
+            var expected = string.Concat("Main1: Text1\r\n",
+                "  section 3 text\r\n",
+                "Main2: Text2");
+
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [Fact]

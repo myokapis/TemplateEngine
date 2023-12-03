@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ namespace TemplateEngine.Tests.Helpers
         }
 
         private static NumberFormatInfo GetNumberFormatter(CultureInfo culture, int decimalPlaces = 2,
-            string decimalSeparator = null, string groupSeparator = null, int negativePattern = 1)
+            string? decimalSeparator = null, string? groupSeparator = null, int negativePattern = 1)
         {
             var f = (NumberFormatInfo)culture.NumberFormat.Clone();
 

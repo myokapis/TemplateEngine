@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ namespace TemplateEngine.Formatters
         /// <param name="negativePattern">Pattern to be used for representing a negative value</param>
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
         /// <param name="decimalSeparator">Character to be used as a decimal separator</param>
-        public FormatPercentAttribute(int decimalPlaces = 2, int? negativePattern = 0,
-            string groupSeparator = null, string decimalSeparator = null)
+        public FormatPercentAttribute(int decimalPlaces = 2, int negativePattern = 0,
+            string? groupSeparator = null, string? decimalSeparator = null)
         {
             FormatInfo = (NumberFormatInfo)Culture.NumberFormat.Clone();
             FormatString = "P";
@@ -45,7 +45,7 @@ namespace TemplateEngine.Formatters
 
             // change the negative number format
             if (negativePattern < 0 || negativePattern > 15) throw new ArgumentException("Invalid negative pattern");
-            FormatInfo.PercentNegativePattern = negativePattern.Value;
+            FormatInfo.PercentNegativePattern = negativePattern;
 
             // change the group separator
             if (groupSeparator != null) FormatInfo.PercentGroupSeparator = groupSeparator;
@@ -58,8 +58,9 @@ namespace TemplateEngine.Formatters
         /// Percentage format constructor that accepts a format string
         /// </summary>
         /// <param name="formatString">Percentage format string</param>
-        public FormatPercentAttribute(string formatString)
+        public FormatPercentAttribute(string? formatString)
         {
+            FormatInfo = (NumberFormatInfo)Culture.NumberFormat.Clone();
             FormatString = formatString;
         }
 
@@ -68,22 +69,22 @@ namespace TemplateEngine.Formatters
         /// </summary>
         /// <param name="formatInfo">A <see cref="NumberFormatInfo" /> to be used for formatting</param>
         /// <param name="formatString">Percentage format string</param>
-        public FormatPercentAttribute(NumberFormatInfo formatInfo, string formatString = null)
+        public FormatPercentAttribute(NumberFormatInfo formatInfo, string? formatString = null)
         {
             FormatInfo = formatInfo;
-            FormatString = "P";
+            FormatString = formatString ?? "P";
         }
 
         private NumberFormatInfo FormatInfo { get; }
 
-        private string FormatString { get; }
+        private string? FormatString { get; }
 
         /// <summary>
         /// Formats an object using the elements provided to this formatter's constructor
         /// </summary>
         /// <param name="data">Data to be formatted</param>
         /// <returns>Object data formatted as a percentage string</returns>
-        public override string FormatData(object data)
+        public override string FormatData(object? data)
         {
             if (data == null) return "";
 

@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ limitations under the License.
 using System;
 using System.Collections.Generic;
 using System.Text;
-using LazyCache;
 using TemplateEngine.Document;
 using TemplateEngine.Loader;
 
@@ -27,7 +26,7 @@ namespace TemplateEngine.Web
     /// <summary>
     /// An opinionated convenience class for creating and caching templates and creating web template writers
     /// </summary>
-    public class WebTemplateCache : TemplateCache<IWebWriter>
+    public class WebTemplateCache : TemplateCacheBase<IWebWriter>
     {
 
         /// <summary>
@@ -35,7 +34,8 @@ namespace TemplateEngine.Web
         /// creating Template and WebWriter objects.
         /// </summary>
         /// <param name="templateDirectory">The path in which the template document files are stored</param>
-        public WebTemplateCache(string templateDirectory) : base(templateDirectory, (text) => new Template(text), (template) => new WebWriter(template), new CachingService()) { }
+        public WebTemplateCache(string templateDirectory) : 
+            base(templateDirectory, (text) => new Template(text), (template) => new WebWriter(template), new Cache()) { }
 
         /// <summary>
         /// Sets the template directory and cache instance, and provides default factory methods for 
@@ -43,7 +43,8 @@ namespace TemplateEngine.Web
         /// </summary>
         /// <param name="templateDirectory">The path in which the template document files are stored</param>
         /// <param name="cache">The instance in which templates will be cached</param>
-        public WebTemplateCache(string templateDirectory, IAppCache cache) : base(templateDirectory, (text) => new Template(text), (template) => new WebWriter(template), cache) { }
+        public WebTemplateCache(string templateDirectory, ICache cache) : 
+            base(templateDirectory, (text) => new Template(text), (template) => new WebWriter(template), cache) { }
 
         /// <summary>
         /// Sets the template directory and cache factory, and provides default factory methods for 
@@ -51,7 +52,8 @@ namespace TemplateEngine.Web
         /// </summary>
         /// <param name="templateDirectory">The path in which the template document files are stored</param>
         /// <param name="cacheFactory">A factory method to provide an instance in which templates will be cached</param>
-        public WebTemplateCache(string templateDirectory, Func<IAppCache> cacheFactory) : base(templateDirectory, (text) => new Template(text), (template) => new WebWriter(template), cacheFactory) { }
+        public WebTemplateCache(string templateDirectory, Func<ICache> cacheFactory) : 
+            base(templateDirectory, (text) => new Template(text), (template) => new WebWriter(template), cacheFactory) { }
 
     }
 

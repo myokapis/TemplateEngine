@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ using TemplateEngine.Document;
 using SectionGroup = System.Collections.Generic.Dictionary<string, TemplateEngine.Writer.ITemplateWriter>;
 
 // TODO: move protected and public methods into proper sections
+// TODO: decide if caching a serialized writer and then deserializing it would be more efficient than constructing a new writer
 
 namespace TemplateEngine.Writer
 {
@@ -32,6 +33,8 @@ namespace TemplateEngine.Writer
     /// </summary>
     public class TemplateWriter : ITemplateWriter
     {
+        #region Class Variables
+
         /// <summary>
         /// The template object on which this writer is based
         /// </summary>
@@ -56,7 +59,7 @@ namespace TemplateEngine.Writer
         /// <summary>
         /// A unique identifier for a writer instance
         /// </summary>
-        protected Guid writerId;
+        protected Guid writerId = Guid.NewGuid();
 
         /// <summary>
         /// The current, unappended value set for this writer
@@ -67,6 +70,10 @@ namespace TemplateEngine.Writer
         /// The collection of appended value sets for this writer
         /// </summary>
         protected List<ValueSet> valueSets = new List<ValueSet>();
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Constructs a new TemplateWriter for a template
@@ -86,8 +93,7 @@ namespace TemplateEngine.Writer
                 sections.Add(sectionName, childWriter);
             }
 
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -98,24 +104,18 @@ namespace TemplateEngine.Writer
         protected TemplateWriter(ITemplate template, Stack<ITemplateWriter> stack)
         {
             this.template = template;
+            this.stack = stack;
             sections = new SectionGroup();
             registeredSections = new SectionGroup();
 
             foreach (var sectionName in template.ChildSectionNames)
             {
-                var childWriter = new TemplateWriter(template.GetTemplate(sectionName));
-                childWriter.stack = stack;
+                var childWriter = new TemplateWriter(template.GetTemplate(sectionName), stack);
                 sections.Add(sectionName, childWriter);
             }
 
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
+            InitializeValueSet(valueSet);
         }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        protected TemplateWriter() {}
 
         /// <summary>
         /// Creates a main TemplateWriter initialized with the incoming values
@@ -130,8 +130,7 @@ namespace TemplateEngine.Writer
             this.registeredSections = registeredSections;
             stack = new Stack<ITemplateWriter>();
             stack.Push(this);
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -147,9 +146,12 @@ namespace TemplateEngine.Writer
             this.sections = sections;
             this.registeredSections = registeredSections;
             this.stack = stack;
-            InitializeValueSet();
-            writerId = Guid.NewGuid();
+            InitializeValueSet(valueSet);
         }
+
+        #endregion
+
+        #region Debug Methods
 
 #if (DEBUG)
         private static List<string> traceResults = new List<string>();
@@ -176,13 +178,15 @@ namespace TemplateEngine.Writer
         }
 #endif
 
+        #endregion
+
         /// <summary>
         /// Append and deselect all sections in the hierarchy beginning with the current section and ending
         /// at the section designated by the sectionName parameter. If no sectionName parameter is provided
         /// then the entire hierarchy is appended.
         /// </summary>
         /// <param name="sectionName">Name of the last section to append</param>
-        public void AppendAll(string sectionName = null)
+        public void AppendAll(string? sectionName = null)
         {
             if (stack == null) return;
             var continueFlag = true;
@@ -221,8 +225,8 @@ namespace TemplateEngine.Writer
         /// </summary>
         public void Clear()
         {
-            var currentWriter = (CurrentWriter as TemplateWriter);
-            currentWriter.InitializeValueSet();
+            var currentWriter = (TemplateWriter)CurrentWriter;
+            InitializeValueSet(currentWriter.valueSet);
         }
 
         /// <summary>
@@ -278,11 +282,26 @@ namespace TemplateEngine.Writer
         }
 
         /// <summary>
+        /// Iterates the appended value sets and merges their data into the template
+        /// </summary>
+        /// <param name="sb"><see cref="StringBuilder"/> to which the populated template is written</param>
+        public void GetContent(StringBuilder sb)
+        {
+            // iterate each set of appended data and write a copy of the template containing the data
+            foreach (var valueSet in valueSets)
+            {
+                WriteTextBlocks(sb, valueSet);
+            }
+
+            Reset();
+        }
+
+        /// <summary>
         /// Gets a TemplateWriter for the requested section
         /// </summary>
         /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
         /// <returns><see cref="ITemplateWriter" /> for the requested section</returns>
-        protected ITemplateWriter GetSection(string sectionName)
+        protected ITemplateWriter? GetSection(string sectionName)
         {
 
             // matches current section
@@ -298,12 +317,14 @@ namespace TemplateEngine.Writer
                 return registeredSections[sectionName];
 
             // otherwise delegate the check to each child section
-            foreach (TemplateWriter section in sections.Values)
+            foreach (var section in sections.Values)
             {
-                var writer = section?.GetSection(sectionName);
+                var sectionWriter = (TemplateWriter)section;
+                var writer = sectionWriter.GetSection(sectionName);
                 if (writer != null) return writer;
             }
 
+            //throw new ArgumentException($"Section, {sectionName}, is not part of the current writer.");
             return null;
         }
 
@@ -314,7 +335,12 @@ namespace TemplateEngine.Writer
         /// <returns>Working copy of <see cref="ITemplateWriter" /> for the requested section</returns>
         public virtual ITemplateWriter GetWriter(string sectionName)
         {
-            return GetSection(sectionName).Copy(true);
+            var writer = GetSection(sectionName);
+
+            if (writer == null)
+                throw new ArgumentException($"Section, {sectionName}, was not found in writer, {SelectedSectionName}.");
+
+            return writer.Copy(true);
         }
 
         /// <summary>
@@ -371,7 +397,7 @@ namespace TemplateEngine.Writer
         public void Reset()
         {
             valueSets.Clear();
-            InitializeValueSet();
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -443,9 +469,10 @@ namespace TemplateEngine.Writer
         /// <param name="fieldName">Name of the field to which the provider is bound</param>
         public void SelectProvider(string fieldName)
         {
-            var cw = CurrentWriter as TemplateWriter;
-            var provider = cw.GetProvider(fieldName) as TemplateWriter;
-            provider.IsProvider = true;
+            var cw = (TemplateWriter)CurrentWriter;
+            var provider = cw.GetProvider(fieldName);// as TemplateWriter;
+            //// TODO: should the writer know that it is a provider?
+            //provider.IsProvider = true;
             stack.Push(provider);
         }
 
@@ -456,8 +483,8 @@ namespace TemplateEngine.Writer
         // TODO: maybe change this to a param array and have the code iterate the selection params
         public void SelectSection(string sectionName)
         {
-            var currentWriter = CurrentWriter as TemplateWriter;
-            var writer = currentWriter.GetChildSection(sectionName) as TemplateWriter;
+            var currentWriter = (TemplateWriter)CurrentWriter;
+            var writer = (TemplateWriter)currentWriter.GetChildSection(sectionName);
             if (writer.stack == null) writer.stack = currentWriter.stack;
             stack.Push(writer);
         }
@@ -534,7 +561,6 @@ namespace TemplateEngine.Writer
         /// <param name="sectionName">Name of the section to set</param>
         /// <param name="data">Data object</param>
         /// <param name="sectionOptions"><see cref="SectionOptions" /> for desired append and deselect behavior</param>
-        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         public void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions)
         {
             SelectSection(sectionName);
@@ -571,7 +597,7 @@ namespace TemplateEngine.Writer
         /// <param name="val">Field value</param>
         public virtual void SetField(string key, string val)
         {
-            var currentWriter = CurrentWriter as TemplateWriter;
+            var currentWriter = (TemplateWriter)CurrentWriter;
 
             try
             {
@@ -592,8 +618,7 @@ namespace TemplateEngine.Writer
         /// <param name="val">Field value</param>
         public void SetField<T>(string key, T val)
         {
-            var stringVal = (val == null) ? "" : val.ToString();
-            SetField(key, stringVal);
+            SetField(key, val?.ToString() ?? "");
         }
 
         /// <summary>
@@ -615,7 +640,7 @@ namespace TemplateEngine.Writer
         /// </summary>
         protected void AppendSection()
         {
-            var currentWriter = (CurrentWriter as TemplateWriter);
+            var currentWriter = (TemplateWriter)CurrentWriter;
             currentWriter.AppendValueSet();
         }
 
@@ -624,24 +649,9 @@ namespace TemplateEngine.Writer
         /// </summary>
         protected void AppendValueSet()
         {
-            if (valueSets == null) valueSets = new List<ValueSet>();
             valueSets.Add(valueSet);
-            InitializeValueSet();
-        }
-
-        /// <summary>
-        /// Iterates the appended value sets and merges their data into the template
-        /// </summary>
-        /// <param name="sb"><see cref="StringBuilder"/> to which the populated template is written</param>
-        protected void GetContent(StringBuilder sb)
-        {
-            // iterate each set of appended data and write a copy of the template containing the data
-            foreach (var valueSet in valueSets)
-            {
-                WriteTextBlocks(sb, valueSet);
-            }
-
-            Reset();
+            valueSet = new ValueSet();
+            InitializeValueSet(valueSet);
         }
 
         /// <summary>
@@ -669,7 +679,7 @@ namespace TemplateEngine.Writer
         /// <returns>The template writer registered to the field</returns>
         protected ITemplateWriter GetProvider(string fieldName)
         {
-
+            // TODO: this method or one of its calls needs to set the IsProvider flag
             if (valueSet.FieldWriters.TryGetValue(fieldName, out var fieldWriter))
                 return fieldWriter;
 
@@ -688,21 +698,27 @@ namespace TemplateEngine.Writer
         /// <summary>
         /// Creates and initializes a new working value set
         /// </summary>
-        protected void InitializeValueSet()
+        //protected void InitializeValueSet()
+        //{
+        //    var newValueSet = new ValueSet();
+
+        //    newValueSet.FieldValues = template.FieldNames.ToDictionary(n => n, n => (string?)null);
+        //    newValueSet.FieldWriters = registeredSections.ToDictionary(s => s.Key, s => s.Value.Copy());
+        //    newValueSet.SectionWriters = sections.ToDictionary(s => s.Key, s => s.Value.Copy());
+
+        //    valueSet = newValueSet;
+        //}
+        protected void InitializeValueSet(ValueSet valueSet)
         {
-            var newValueSet = new ValueSet();
-
-            newValueSet.FieldValues = template.FieldNames.ToDictionary(n => n, n => (string)null);
-            newValueSet.FieldWriters = registeredSections.ToDictionary(s => s.Key, s => s.Value.Copy());
-            newValueSet.SectionWriters = sections.ToDictionary(s => s.Key, s => s.Value.Copy());
-
-            valueSet = newValueSet;
+            valueSet.FieldValues = template.FieldNames.ToDictionary(n => n, n => (string?)null);
+            valueSet.FieldWriters = registeredSections.ToDictionary(s => s.Key, s => s.Value.Copy());
+            valueSet.SectionWriters = sections.ToDictionary(s => s.Key, s => s.Value.Copy());
         }
 
-        /// <summary>
-        /// Indicates if this template is registered as a field provider
-        /// </summary>
-        public bool IsProvider { get; protected set; }
+        ///// <summary>
+        ///// Indicates if this template is registered as a field provider
+        ///// </summary>
+        //public bool IsProvider { get; protected set; }
 
         /// <summary>
         /// Unique id of this instance
@@ -712,7 +728,10 @@ namespace TemplateEngine.Writer
         /// <summary>
         /// A delegate to allow child classes to handle literal text blocks differently
         /// </summary>
-        protected Action<StringBuilder, TextBlock> WriteLiteralTextBlock { get; set; }
+        protected virtual void WriteLiteralTextBlock(StringBuilder sb, TextBlock textBlock)
+        {
+            sb.Append(textBlock.Text);
+        }
 
         /// <summary>
         /// Generates output from all of the <see cref="TextBlock"/> in the writer's template
@@ -733,24 +752,37 @@ namespace TemplateEngine.Writer
                 }
                 else if (textBlock.Type == TextBlockType.Section)
                 {
-                    List<string> extraText = null;
+                    //List<string> extraText = null;
 
                     // get the writer for the given section
-                    var writer = valueSet.SectionWriters[textBlock.ReferenceName] as TemplateWriter;
-                    var hasData = writer.HasData;
+                    var writer = valueSet.SectionWriters[textBlock.ReferenceName];
+                    //var hasData = writer.HasData;
 
                     // get the extra text for the section to be written
-                    if (writer.template.IsSingleLine && hasData && extraText == null)
-                    {
-                        extraText = template.TextBlocks
-                            .Where(b => b.ReferenceName == textBlock.ReferenceName
-                                && (b.Type == TextBlockType.Prefix || b.Type == TextBlockType.Suffix))
-                            .Select(b => b.TagText)
-                            .ToList();
-                    }
+                    //// TODO: see if there was a reason to check extraText (seems like it will always be null)
+                    //if (writer.Template.IsSingleLine && hasData) // && extraText == null)
+                    //{
+                    //    extraText = template.TextBlocks
+                    //        .Where(b => b.ReferenceName == textBlock.ReferenceName
+                    //            && (b.Type == TextBlockType.Prefix || b.Type == TextBlockType.Suffix))
+                    //        .Select(b => b.TagText)
+                    //        .ToList();
+                    //}
+
+                    var extraText = template.TextBlocks
+                        .Where(b => writer.Template.IsSingleLine && writer.HasData
+                            && b.ReferenceName == textBlock.ReferenceName
+                            && (b.Type == TextBlockType.Prefix || b.Type == TextBlockType.Suffix))
+                        .Select(b => b.TagText)
+                        .ToArray();
 
                     // write the extra text for the opening tag
-                    if (extraText != null && hasData)
+                    //if (extraText != null && hasData)
+                    //{
+                    //    sb.Append(extraText[0]);
+                    //    sb.Append(extraText[1]);
+                    //}
+                    if(extraText.Length > 0)
                     {
                         sb.Append(extraText[0]);
                         sb.Append(extraText[1]);
@@ -759,18 +791,24 @@ namespace TemplateEngine.Writer
                     writer.GetContent(sb);
 
                     // write the extra text for the closing tag
-                    if (extraText != null && hasData)
+                    //if (extraText != null && hasData)
+                    //{
+                    //    sb.Append(extraText[2]);
+                    //    sb.Append(extraText[3]);
+                    //}
+                    if (extraText.Length > 0)
                     {
                         sb.Append(extraText[2]);
                         sb.Append(extraText[3]);
                     }
+
                 }
                 else if (textBlock.Type == TextBlockType.Field)
                 {
                     if (registeredSections.ContainsKey(textBlock.ReferenceName))
                     {
                         if (valueSet.FieldWriters.TryGetValue(textBlock.ReferenceName, out var writer))
-                            (writer as TemplateWriter).GetContent(sb);
+                            writer.GetContent(sb);
                     }
                     else
                     {
@@ -780,11 +818,7 @@ namespace TemplateEngine.Writer
                 }
                 else if (textBlock.Type == TextBlockType.Literal)
                 {
-                    // use the default handler for literal text blocks unless an alternate handler is defined
-                    if (WriteLiteralTextBlock == null)
-                        sb.Append(textBlock.Text);
-                    else
-                        WriteLiteralTextBlock(sb, textBlock);
+                    WriteLiteralTextBlock(sb, textBlock);
                 }
             }
 

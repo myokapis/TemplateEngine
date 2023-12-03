@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ namespace TemplateEngine.Loader
     /// <summary>
     /// Cache that stores templates for retrieval.
     /// </summary>
-    public class TemplateCache<IWriter> : TemplateLoader<IWriter>, ITemplateCache<IWriter> where IWriter : class, ITemplateWriter
+    public class TemplateCacheBase<IWriter> : TemplateLoaderBase<IWriter>, ITemplateCache<IWriter> where IWriter : class, ITemplateWriter
     {
 
         /// <summary>
-        /// The instance of IAppCache in which templates are to be stored
+        /// The instance of ICache in which templates are to be stored
         /// </summary>
-        protected readonly IAppCache cache;
+        protected readonly ICache cache;
 
         /// <summary>
         /// Constructs a new cache object
@@ -41,7 +41,7 @@ namespace TemplateEngine.Loader
         /// <param name="templateFactory">A function to create a new template</param>
         /// <param name="writerFactory">A function to create a new writer</param>
         /// <param name="cache">Cache instance to be used for storing templates</param>
-        public TemplateCache(string templateDirectory, Func<string, ITemplate> templateFactory, Func<ITemplate, IWriter> writerFactory, IAppCache cache) :
+        public TemplateCacheBase(string templateDirectory, Func<string, ITemplate> templateFactory, Func<ITemplate, IWriter> writerFactory, ICache cache) :
             base(templateDirectory, templateFactory, writerFactory)
         {
             this.cache = cache;
@@ -54,7 +54,7 @@ namespace TemplateEngine.Loader
         /// <param name="templateFactory">A function to create a new template</param>
         /// <param name="writerFactory">A function to create a new writer</param>
         /// <param name="cacheFactory">A function to create a cache instance to be used for storing templates</param>
-        public TemplateCache(string templateDirectory, Func<string, ITemplate> templateFactory, Func<ITemplate, IWriter> writerFactory, Func<IAppCache> cacheFactory) :
+        public TemplateCacheBase(string templateDirectory, Func<string, ITemplate> templateFactory, Func<ITemplate, IWriter> writerFactory, Func<ICache> cacheFactory) :
             base(templateDirectory, templateFactory, writerFactory)
         {
             this.cache = cacheFactory();
@@ -67,7 +67,8 @@ namespace TemplateEngine.Loader
         /// <returns>Copy of a template</returns>
         public override ITemplate GetTemplate(string fileName)
         {
-            return cache.GetOrAdd(fileName, () => base.GetTemplate(fileName)).Copy();
+            var template = cache.GetOrAdd<ITemplate>(fileName, () => base.GetTemplate(fileName));
+            return template.Copy();
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace TemplateEngine.Loader
         /// <returns>Copy of a template</returns>
         public override async Task<ITemplate> GetTemplateAsync(string fileName)
         {
-            var template = await cache.GetOrAddAsync(fileName, () => base.GetTemplateAsync(fileName));
+            var template = await cache.GetOrAddAsync<ITemplate>(fileName, base.GetTemplateAsync);
             return template.Copy();
         }
 

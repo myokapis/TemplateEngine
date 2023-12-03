@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ namespace TemplateEngine.Loader
     /// <summary>
     /// An opinionated convenience class for loading and caching templates and creating template writers
     /// </summary>
-    public class TemplateCache : TemplateCache<ITemplateWriter>
+    public class TemplateCache : TemplateCacheBase<ITemplateWriter>
     {
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace TemplateEngine.Loader
         /// creating Template and TemplateWriter objects.
         /// </summary>
         /// <param name="templateDirectory">The path in which the template document files are stored</param>
-        public TemplateCache(string templateDirectory) : base(templateDirectory, (text) => new Template(text), (template) => new TemplateWriter(template), new CachingService()) { }
+        public TemplateCache(string templateDirectory) : base(templateDirectory, (text) => new Template(text), (template) => new TemplateWriter(template), new Cache()) { }
 
         /// <summary>
         /// Sets the template directory and cache instance, and provides default factory methods for 
@@ -43,7 +43,7 @@ namespace TemplateEngine.Loader
         /// </summary>
         /// <param name="templateDirectory">The path in which the template document files are stored</param>
         /// <param name="cache">The instance in which templates will be cached</param>
-        public TemplateCache(string templateDirectory, IAppCache cache) : base(templateDirectory, (text) => new Template(text), (template) => new TemplateWriter(template), cache) { }
+        public TemplateCache(string templateDirectory, ICache cache) : base(templateDirectory, (text) => new Template(text), (template) => new TemplateWriter(template), cache) { }
 
         /// <summary>
         /// Sets the template directory and cache factory, and provides default factory methods for 
@@ -51,7 +51,7 @@ namespace TemplateEngine.Loader
         /// </summary>
         /// <param name="templateDirectory">The path in which the template document files are stored</param>
         /// <param name="cacheFactory">A factory method to provide an instance in which templates will be cached</param>
-        public TemplateCache(string templateDirectory, Func<IAppCache> cacheFactory) : base(templateDirectory, (text) => new Template(text), (template) => new TemplateWriter(template), cacheFactory) { }
+        public TemplateCache(string templateDirectory, Func<ICache> cacheFactory) : base(templateDirectory, (text) => new Template(text), (template) => new TemplateWriter(template), cacheFactory) { }
 
 
     }

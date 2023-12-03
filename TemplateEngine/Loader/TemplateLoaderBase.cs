@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ namespace TemplateEngine.Loader
     /// Loads template text from the file system. Also provides methods for creating a template
     /// writer from the template text.
     /// </summary>
-    public class TemplateLoader<IWriter> : ITemplateLoader<IWriter> where IWriter : class, ITemplateWriter
+    public class TemplateLoaderBase<IWriter> : ITemplateLoader<IWriter> where IWriter : class, ITemplateWriter
     {
         /// <summary>
         /// A factory method for providing an ITemplate instance
@@ -46,7 +46,7 @@ namespace TemplateEngine.Loader
         /// <param name="templateDirectory">Directory to search for template files</param>
         /// <param name="templateFactory">Delegate for instantiating a template from the file name</param>
         /// <param name="writerFactory">A method for creating an IWriter instance</param>
-        public TemplateLoader(string templateDirectory, Func<string, ITemplate> templateFactory, Func<ITemplate, IWriter> writerFactory)
+        public TemplateLoaderBase(string templateDirectory, Func<string, ITemplate> templateFactory, Func<ITemplate, IWriter> writerFactory)
         {
             if (string.IsNullOrWhiteSpace(templateDirectory)) throw new ArgumentException("Invalid template path.");
 
@@ -100,7 +100,7 @@ namespace TemplateEngine.Loader
         public virtual IWriter GetWriter(string fileName, string sectionName)
         {
             var template = GetTemplate(fileName);
-            return writerFactory(template).GetWriter(sectionName) as IWriter;
+            return (IWriter)writerFactory(template).GetWriter(sectionName);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace TemplateEngine.Loader
         public virtual async Task<IWriter> GetWriterAsync(string fileName, string sectionName)
         {
             var template = await GetTemplateAsync(fileName);
-            return writerFactory(template).GetWriter(sectionName) as IWriter;
+            return (IWriter)writerFactory(template).GetWriter(sectionName);
         }
 
         /// <summary>

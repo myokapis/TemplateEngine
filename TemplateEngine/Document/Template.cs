@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,17 +31,17 @@ namespace TemplateEngine.Document
     /// </summary>
     public class Template : ITemplate
     {
-        private List<string> fieldNames;
+        private List<string> fieldNames = new List<string>();
 
         /// <summary>
         /// Collection of parsed text blocks
         /// </summary>
-        protected List<TextBlock> textBlocks;
+        protected List<TextBlock> textBlocks = new List<TextBlock>();
 
         /// <summary>
         /// Collection of child templates referenced by section name
         /// </summary>
-        protected Dictionary<string, Template> templates;
+        protected Dictionary<string, Template> templates = new Dictionary<string, Template>();
 
         /// <summary>
         /// Raw length of the string from which the template was parsed
@@ -55,10 +55,10 @@ namespace TemplateEngine.Document
 
         #region Constructors
 
-        internal Template()
-        {
+        //internal Template()
+        //{
 
-        }
+        //}
 
         /// <summary>
         /// Constructs a template from raw text
@@ -66,7 +66,7 @@ namespace TemplateEngine.Document
         /// <param name="text">Raw text to parse</param>
         public Template(in string text)
         {
-            Init("@MAIN");
+            SectionName = "@MAIN";
             ParseTemplateFromText(text);
             TemplateTypeId = Guid.NewGuid();
             TemplateId = Guid.NewGuid();
@@ -84,7 +84,7 @@ namespace TemplateEngine.Document
         protected Template(in string text, string sectionName, in List<string> sectionList,
             in Dictionary<string, SectionInfo> sectionLookup)
         {
-            Init(sectionName);
+            SectionName = sectionName;
             ParseSections(text, sectionName, sectionList, sectionLookup);
             TemplateTypeId = Guid.NewGuid();
             TemplateId = Guid.NewGuid();
@@ -177,20 +177,20 @@ namespace TemplateEngine.Document
         /// <summary>
         /// Gets a copy of a template based on this template or a template representing a subsection of this template
         /// </summary>
-        /// <param name="name">Section name identifying the template (null returns a copy of this template)</param>
+        /// <param name="sectionName">Section name identifying the template (null returns a copy of this template)</param>
         /// <returns>A copy of the requested template</returns>
-        public ITemplate GetTemplate(string name)
+        public ITemplate GetTemplate(string sectionName)
         {
-            if (string.IsNullOrWhiteSpace(name)) Copy();
+            if (string.IsNullOrWhiteSpace(sectionName)) Copy();
 
-            if (templates.TryGetValue(name, out var template)) return template;
+            if (templates.TryGetValue(sectionName, out var template)) return template;
 
             foreach (var section in templates.Values)
             {
-                if (section.GetTemplate(name) != null) return section.Copy();
+                if (section.GetTemplate(sectionName) != null) return section.Copy();
             }
 
-            return null;
+            throw new ArgumentException($"Section, {sectionName}, was not found in the current template.");
         }
 
         /// <summary>
@@ -258,8 +258,8 @@ namespace TemplateEngine.Document
                 }
 
                 // not single line if the text or tag text contains an EOL char
-                if (regexEOL.IsMatch(textBlock.Text ?? "")) return false;
-                if (regexEOL.IsMatch(textBlock.TagText ?? "")) return false;
+                if (regexEOL.IsMatch(textBlock.Text)) return false;
+                if (regexEOL.IsMatch(textBlock.TagText)) return false;
             }
 
             return true;
@@ -298,17 +298,17 @@ namespace TemplateEngine.Document
             return subSections;
         }
 
-        /// <summary>
-        /// Sets initial values for properties and members
-        /// </summary>
-        /// <param name="sectionName"></param>
-        protected void Init(string sectionName)
-        {
-            fieldNames = new List<string>();
-            textBlocks = new List<TextBlock>();
-            templates = new Dictionary<string, Template>();
-            SectionName = sectionName;
-        }
+        ///// <summary>
+        ///// Sets initial values for properties and members
+        ///// </summary>
+        ///// <param name="sectionName"></param>
+        //protected void Init(string sectionName)
+        //{
+        //    fieldNames = new List<string>();
+        //    textBlocks = new List<TextBlock>();
+        //    templates = new Dictionary<string, Template>();
+        //    SectionName = sectionName;
+        //}
 
         /// <summary>
         /// Parses a section of text from a template
@@ -343,7 +343,7 @@ namespace TemplateEngine.Document
                 if (!fieldNames.Contains(fieldName)) fieldNames.Add(fieldName);
 
                 // add the field placeholder
-                textBlocks.Add(new TextBlock(TextBlockType.Field, null, fieldName, match.Value));
+                textBlocks.Add(new TextBlock(TextBlockType.Field, "", fieldName, match.Value));
 
                 // reset the start point to after the end of the field
                 startPoint = match.Index + match.Length;
@@ -394,9 +394,9 @@ namespace TemplateEngine.Document
                 templates.Add(subSection.SectionName, template);
 
                 // add the subsection open tag as a placeholder
-                textBlocks.Add(new TextBlock(TextBlockType.Prefix, null, subSection.SectionName, subSection.OpenPrefix));
-                textBlocks.Add(new TextBlock(TextBlockType.SectionTag, null, subSection.SectionName, subSection.OpenTag));
-                textBlocks.Add(new TextBlock(TextBlockType.Suffix, null, subSection.SectionName, subSection.OpenSuffix));
+                textBlocks.Add(new TextBlock(TextBlockType.Prefix, "", subSection.SectionName, subSection.OpenPrefix));
+                textBlocks.Add(new TextBlock(TextBlockType.SectionTag, "", subSection.SectionName, subSection.OpenTag));
+                textBlocks.Add(new TextBlock(TextBlockType.Suffix, "", subSection.SectionName, subSection.OpenSuffix));
 
                 // add the section as a placeholder
                 if (subSection.IsLiteral)
@@ -412,9 +412,9 @@ namespace TemplateEngine.Document
                 }
 
                 // add the subsection close tag as a placeholder
-                textBlocks.Add(new TextBlock(TextBlockType.Prefix, null, subSection.SectionName, subSection.ClosePrefix));
-                textBlocks.Add(new TextBlock(TextBlockType.SectionTag, null, subSection.SectionName, subSection.CloseTag));
-                textBlocks.Add(new TextBlock(TextBlockType.Suffix, null, subSection.SectionName, subSection.CloseSuffix));
+                textBlocks.Add(new TextBlock(TextBlockType.Prefix, "", subSection.SectionName, subSection.ClosePrefix));
+                textBlocks.Add(new TextBlock(TextBlockType.SectionTag, "", subSection.SectionName, subSection.CloseTag));
+                textBlocks.Add(new TextBlock(TextBlockType.Suffix, "", subSection.SectionName, subSection.CloseSuffix));
 
                 // set the new start point
                 textStartIndex = subSection.CloseTagEndIndex;
@@ -431,7 +431,7 @@ namespace TemplateEngine.Document
         /// <param name="text">The text to be parsed</param>
         protected void ParseTemplateFromText(string text)
         {
-            string literalSectionName = null;
+            string? literalSectionName = null;
             rawLength = text.Length;
             var matches = regexSectionText.Matches(text);
 

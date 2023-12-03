@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,37 +16,65 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using LazyCache;
+using System.Threading.Tasks;
 using TemplateEngine.Document;
+using TemplateEngine.Loader;
 
 namespace TemplateEngine.Tests.Helpers
 {
 
-    public class TestAppCache : CachingService
+    public class TestAppCache : ICache
     {
-        protected Dictionary<string, ITemplate> dic = new Dictionary<string, ITemplate>();
+        protected Dictionary<string, ITemplate> dic = new();
 
-        public virtual void Add<T>(string key, T item)
+        public virtual void Add<T>(string key, T item) where T : ITemplate
         {
-            dic.TryAdd(key, (ITemplate)item);
+            dic.TryAdd(key, item);
         }
 
-        public override T Get<T>(string key)
+        public T? Get<T>(string key) where T : ITemplate
         {
             dic.TryGetValue(key, out var template);
-            return (T)template;
+
+            return template == null ? default : (T)template;
         }
 
-        public virtual T GetOrAdd<T>(string key, Func<string, T> factory)
+        public T GetOrAdd<T>(string key, Func<string, T> factory) where T : ITemplate
         {
             if (!dic.TryGetValue(key, out var template))
             {
-                template = (ITemplate)factory.Invoke(key);
+                template = factory.Invoke(key);
                 dic.Add(key, template);
             }
 
             return (T)template;
+        }
+
+        public T GetOrAdd<T>(string key, Func<T> factory) where T : ITemplate
+        {
+            if (!dic.TryGetValue(key, out var template))
+            {
+                template = factory.Invoke();
+                dic.Add(key, template);
+            }
+
+            return (T)template;
+        }
+
+        public async Task<T> GetOrAddAsync<T>(string key, Func<string, Task<T>> factory) where T : ITemplate
+        {
+            if (!dic.TryGetValue(key, out var template))
+            {
+                template = await factory.Invoke(key);
+                dic.Add(key, template);
+            }
+
+            return (T)template;
+        }
+
+        public void Remove(string key)
+        {
+            throw new NotImplementedException();
         }
     }
 

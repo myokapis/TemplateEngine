@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ namespace ExampleWebSite
         /// if no usable configuration is found.</remarks>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog()
+                .UseSerilog((context, serilogConfig) => serilogConfig.ReadFrom.Configuration(context.Configuration))
                 .UseTemplateEngine()
                 .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
     }

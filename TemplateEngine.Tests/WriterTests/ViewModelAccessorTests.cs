@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,24 +28,24 @@ namespace TemplateEngine.Tests
         [Fact]
         public void TestCount()
         {
-            Model1 model1 = new Model1() { PropertyA = "ValueA", PropertyB = "ValueB" };
-            Model2 model2 = new Model2() { PropertyA = "ValueA", PropertyB = "ValueB", PropertyC = "ValueC" };
+            Model1 model1 = new() { PropertyA = "ValueA", PropertyB = "ValueB" };
+            Model2 model2 = new() { PropertyA = "ValueA", PropertyB = "ValueB", PropertyC = "ValueC" };
 
-            ViewModelAccessor<Model1> accessor1 = new ViewModelAccessor<Model1>(model1);
-            ViewModelAccessor<Model2> accessor2 = new ViewModelAccessor<Model2>(model2);
+            ViewModelAccessor<Model1> accessor1 = new(model1);
+            ViewModelAccessor<Model2> accessor2 = new(model2);
 
-            accessor1.Count.Should().Equals(2);
-            accessor2.Count.Should().Equals(3);
+            accessor1.Count.Should().Be(2);
+            accessor2.Count.Should().Be(3);
         }
 
         [Fact]
         public void TestCreateObject()
         {
-            Model1 model1 = new Model1() { PropertyA = "ValueA", PropertyB = "ValueB" };
-            Model2 model2 = new Model2() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
+            Model1 model1 = new() { PropertyA = "ValueA", PropertyB = "ValueB" };
+            Model2 model2 = new() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
 
-            ViewModelAccessor<Model1> accessor1 = new ViewModelAccessor<Model1>(model1);
-            ViewModelAccessor<Model2> accessor2 = new ViewModelAccessor<Model2>(model2);
+            ViewModelAccessor<Model1> accessor1 = new(model1);
+            ViewModelAccessor<Model2> accessor2 = new(model2);
 
             accessor1.Should().BeOfType<ViewModelAccessor<Model1>>();
             accessor2.Should().BeOfType<ViewModelAccessor<Model2>>();
@@ -54,16 +54,16 @@ namespace TemplateEngine.Tests
         [Fact]
         public void TestEnumerator()
         {
-            Model1 model1 = new Model1() { PropertyA = "ValueA", PropertyB = "ValueB" };
-            Model2 model2 = new Model2() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
+            Model1 model1 = new() { PropertyA = "ValueA", PropertyB = "ValueB" };
+            Model2 model2 = new() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
 
-            ViewModelAccessor<Model1> accessor1 = new ViewModelAccessor<Model1>(model1);
-            ViewModelAccessor<Model2> accessor2 = new ViewModelAccessor<Model2>(model2);
+            ViewModelAccessor<Model1> accessor1 = new(model1);
+            ViewModelAccessor<Model2> accessor2 = new(model2);
 
-            Dictionary<string, string> dictionary1 = new Dictionary<string, string>();
-            Dictionary<string, string> dictionary2 = new Dictionary<string, string>();
-            Dictionary<string, string> expectedValues1 = new Dictionary<string, string>() { { "PropertyA", model1.PropertyA }, { "PropertyB", model1.PropertyB } };
-            Dictionary<string, string> expectedValues2 = new Dictionary<string, string>() { { "PropertyA", model2.PropertyA }, { "PropertyB", model2.PropertyB }, { "PropertyC", model2.PropertyC } };
+            Dictionary<string, string> dictionary1 = new();
+            Dictionary<string, string> dictionary2 = new();
+            Dictionary<string, string> expectedValues1 = new() { { "PropertyA", model1.PropertyA }, { "PropertyB", model1.PropertyB } };
+            Dictionary<string, string> expectedValues2 = new() { { "PropertyA", model2.PropertyA }, { "PropertyB", model2.PropertyB }, { "PropertyC", model2.PropertyC } };
 
             foreach (KeyValuePair<string, string> kvp in accessor1.FieldValues)
             {
@@ -82,21 +82,21 @@ namespace TemplateEngine.Tests
         [Fact]
         public void TestIndexer_ByIndex()
         {
-            Model2 model2 = new Model2() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
+            Model2 model2 = new() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
 
-            ViewModelAccessor<Model2> accessor2 = new ViewModelAccessor<Model2>(model2);
+            ViewModelAccessor<Model2> accessor2 = new(model2);
 
             model2.PropertyA.Should().BeEquivalentTo(accessor2[0]);
             model2.PropertyB.Should().BeEquivalentTo(accessor2[1]);
-            model2.PropertyC.Should().Equals(accessor2[2]);
+            model2.PropertyC.Should().BeSameAs(accessor2[2]);
         }
 
         [Fact]
         public void TestIndexer_ByFieldName()
         {
-            Model2 model2 = new Model2() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
+            Model2 model2 = new() { PropertyA = "Value1", PropertyB = "Value2", PropertyC = "Value3" };
 
-            ViewModelAccessor<Model2> accessor2 = new ViewModelAccessor<Model2>(model2);
+            ViewModelAccessor<Model2> accessor2 = new(model2);
 
             model2.PropertyA.Should().BeEquivalentTo(accessor2["PropertyA"]);
             model2.PropertyB.Should().BeEquivalentTo(accessor2["PropertyB"]);
@@ -106,13 +106,13 @@ namespace TemplateEngine.Tests
         [Fact]
         public void TestModel()
         {
-            Model1 model1 = new Model1() { PropertyA = "ValueA", PropertyB = "ValueB" };
+            Model1 model1 = new() { PropertyA = "ValueA", PropertyB = "ValueB" };
 
-            ViewModelAccessor<Model1> accessor1 = new ViewModelAccessor<Model1>(model1);
+            ViewModelAccessor<Model1> accessor1 = new(model1);
 
             model1.PropertyA.Should().BeEquivalentTo(accessor1.Model.PropertyA);
             model1.PropertyB.Should().BeEquivalentTo(accessor1.Model.PropertyB);
-            model1.Should().Equals(accessor1.Model);
+            model1.Should().BeSameAs(accessor1.Model);
         }
 
         [Fact]
@@ -120,26 +120,26 @@ namespace TemplateEngine.Tests
         {
             var model3 = new Model3() { PropertyA = "ValueA", PropertyB = "ValueB" };
 
-            ViewModelAccessor<Model3> accessor1 = new ViewModelAccessor<Model3>(model3);
+            ViewModelAccessor<Model3> accessor1 = new(model3);
 
             model3.PropertyA.Should().BeEquivalentTo(accessor1.Model.PropertyA);
             model3.PropertyB.Should().BeEquivalentTo(accessor1.Model.PropertyB);
-            model3.Should().Equals(accessor1.Model);
+            model3.Should().BeEquivalentTo(accessor1.Model);
         }
 
         #region "internal objects"
 
         public class Model1
         {
-            public string PropertyA { get; set; }
-            public string PropertyB { get; set; }
+            public string? PropertyA { get; set; }
+            public string? PropertyB { get; set; }
         }
 
         public class Model2
         {
-            public string PropertyA { get; set; }
-            public string PropertyB { get; set; }
-            public string PropertyC { get; set; }
+            public string? PropertyA { get; set; }
+            public string? PropertyB { get; set; }
+            public string? PropertyC { get; set; }
         }
 
         public struct Model3

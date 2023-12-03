@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -67,7 +67,10 @@ namespace TemplateEngine.Tests.DocumentTests
                 "<!-- @@SECTION2@@ -->"
             });
 
-            Action action = () => new Template(templateText);
+            Action action = () =>
+            {
+                Template template = new(templateText);
+            };
             action.Should().Throw<ArgumentException>()
                 .WithMessage("The CloseIndex of the section parameter has already been set.");
         }
@@ -128,7 +131,10 @@ namespace TemplateEngine.Tests.DocumentTests
                 "some more stuff"
             });
 
-            Action action = () => new Template(templateText);
+            Action action = () =>
+            {
+                Template template = new(templateText);
+            };
             action.Should().Throw<InvalidOperationException>()
                 .WithMessage("Section, SECTION2, is missing an opening or closing tag.");
         }
@@ -148,7 +154,10 @@ namespace TemplateEngine.Tests.DocumentTests
                 "<!-- @@SECTION2@@ -->"
             });
 
-            Action action = () => new Template(templateText);
+            Action action = () =>
+            {
+                Template template = new(templateText);
+            };
             action.Should().Throw<InvalidOperationException>()
                 .WithMessage("Section, SECTION2, is improperly nested.");
         }
@@ -255,13 +264,13 @@ namespace TemplateEngine.Tests.DocumentTests
             return templates;
         }
 
-        private string GetTemplateFileText()
+        private static string GetTemplateFileText()
         {
             var bytes = Properties.Resources.Transactions;
             return Encoding.UTF8.GetString(bytes);
         }
 
-        private readonly Dictionary<string, List<string>> childSectionNames = new Dictionary<string, List<string>>()
+        private readonly Dictionary<string, List<string>> childSectionNames = new()
         {
             { "@MAIN", new List<string>() { "LICENSE", "HEAD", "BODY" } },
             { "LICENSE", new List<string>() },
@@ -274,7 +283,7 @@ namespace TemplateEngine.Tests.DocumentTests
             { "BUDGET_LINES", new List<string>() }
         };
 
-        private readonly Dictionary<string, List<string>> fieldNames = new Dictionary<string, List<string>>()
+        private readonly Dictionary<string, List<string>> fieldNames = new()
         {
             { "@MAIN", new List<string>() { "MainField" } },
             { "LICENSE", new List<string>() },
@@ -287,7 +296,7 @@ namespace TemplateEngine.Tests.DocumentTests
             { "BUDGET_LINES", new List<string>() { "VALUE", "SELECTED", "TEXT" } }
         };
 
-        private readonly Dictionary<string, int> rawLength = new Dictionary<string, int>()
+        private readonly Dictionary<string, int> rawLength = new()
         {
             { "@MAIN", 3661 },
             { "LICENSE", 742 },
@@ -300,46 +309,46 @@ namespace TemplateEngine.Tests.DocumentTests
             { "BUDGET_LINES", 56 }
         };
 
-        private readonly List<string> sectionNames = new List<string>()
+        private readonly List<string> sectionNames = new()
         {
             "@MAIN", "LICENSE", "HEAD", "BODY", "ROW", "EDITOR", "TRANSACTION_TYPE", "EDITOR_ROWS", "BUDGET_LINES"
         };
 
-        private readonly Dictionary<string, List<TextBlock>> textBlocks = new Dictionary<string, List<TextBlock>>()
+        private readonly Dictionary<string, List<TextBlock>> textBlocks = new()
         {
             { "@MAIN", new List<TextBlock>()
                 {
                     new TextBlock(TextBlockType.Text, "Line Before\r\n"),
-                    new TextBlock(TextBlockType.Prefix, null, "SECTION1", ""),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION1", "<!-- @@SECTION1@@ -->"),
-                    new TextBlock(TextBlockType.Suffix, null, "SECTION1", "\r\n"),
+                    new TextBlock(TextBlockType.Prefix, "", "SECTION1", ""),
+                    new TextBlock(TextBlockType.SectionTag, "", "SECTION1", "<!-- @@SECTION1@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, "", "SECTION1", "\r\n"),
                     new TextBlock(TextBlockType.Section, "", "SECTION1"),
-                    new TextBlock(TextBlockType.Prefix, null, "SECTION1", ""),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION1", "<!-- @@SECTION1@@ -->"),
-                    new TextBlock(TextBlockType.Suffix, null, "SECTION1", "\r\n"),
+                    new TextBlock(TextBlockType.Prefix, "", "SECTION1", ""),
+                    new TextBlock(TextBlockType.SectionTag, "", "SECTION1", "<!-- @@SECTION1@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, "", "SECTION1", "\r\n"),
                     new TextBlock(TextBlockType.Text, "\r\nsome stuff with a "),
-                    new TextBlock(TextBlockType.Field, null, "Field0", "@@Field0@@"),
+                    new TextBlock(TextBlockType.Field, "", "Field0", "@@Field0@@"),
                     new TextBlock(TextBlockType.Text, " in it\r\ntext after")
                 }
             },
             { "SECTION1", new List<TextBlock>()
                 {
                     new TextBlock(TextBlockType.Text, "text and more text\r\n"),
-                    new TextBlock(TextBlockType.Field, null, "Field1", "@@Field1@@"),
+                    new TextBlock(TextBlockType.Field, "", "Field1", "@@Field1@@"),
                     new TextBlock(TextBlockType.Text, "\r\n"),
-                    new TextBlock(TextBlockType.Prefix, null, "SECTION2", ""),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION2", "<!-- @@SECTION2@@ -->"),
-                    new TextBlock(TextBlockType.Suffix, null, "SECTION2", "\r\n"),
+                    new TextBlock(TextBlockType.Prefix, "", "SECTION2", ""),
+                    new TextBlock(TextBlockType.SectionTag, "", "SECTION2", "<!-- @@SECTION2@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, "", "SECTION2", "\r\n"),
                     new TextBlock(TextBlockType.Section, "", "SECTION2"),
-                    new TextBlock(TextBlockType.Prefix, null, "SECTION2", ""),
-                    new TextBlock(TextBlockType.SectionTag, null, "SECTION2", "<!-- @@SECTION2@@ -->"),
-                    new TextBlock(TextBlockType.Suffix, null, "SECTION2", "\r\n"),
+                    new TextBlock(TextBlockType.Prefix, "", "SECTION2", ""),
+                    new TextBlock(TextBlockType.SectionTag, "", "SECTION2", "<!-- @@SECTION2@@ -->"),
+                    new TextBlock(TextBlockType.Suffix, "", "SECTION2", "\r\n"),
                 }
             },
             { "SECTION2", new List<TextBlock>()
                 {
                     new TextBlock(TextBlockType.Text, "some more stuff "),
-                    new TextBlock(TextBlockType.Field, null, "Field2", "@@Field2@@"),
+                    new TextBlock(TextBlockType.Field, "", "Field2", "@@Field2@@"),
                     new TextBlock(TextBlockType.Text, " and a field\r\n")
                 }
             }

@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using TemplateEngine.Document;
 
 namespace TemplateEngine.Writer
@@ -32,7 +33,7 @@ namespace TemplateEngine.Writer
         /// then the entire hierarchy is appended.
         /// </summary>
         /// <param name="sectionName">Name of the last section to append</param>
-        void AppendAll(string sectionName = null);
+        void AppendAll(string? sectionName = null);
 
         /// <summary>
         /// Appends the current section and optionally deselects the current section.
@@ -84,6 +85,12 @@ namespace TemplateEngine.Writer
         string GetContent(bool appendAll = false);
 
         /// <summary>
+        /// Iterates the appended value sets and merges their data into the template
+        /// </summary>
+        /// <param name="sb"><see cref="StringBuilder"/> to which the populated template is written</param>
+        void GetContent(StringBuilder sb);
+
+        /// <summary>
         /// Gets a TemplateWriter for the requested section
         /// </summary>
         /// <param name="sectionName">Name of the section for which a writer is to be returned</param>
@@ -91,9 +98,14 @@ namespace TemplateEngine.Writer
         ITemplateWriter GetWriter(string sectionName);
 
         /// <summary>
-        /// Indicates if this template is registered as a field provider
+        /// Indicates if the template contains any field data
         /// </summary>
-        bool IsProvider { get; }
+        bool HasData { get; }
+
+        ///// <summary>
+        ///// Indicates if this template is registered as a field provider
+        ///// </summary>
+        //bool IsProvider { get; }
 
         /// <summary>
         /// The names of all registered field providers

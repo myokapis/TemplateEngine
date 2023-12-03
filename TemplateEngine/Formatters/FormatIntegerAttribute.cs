@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ namespace TemplateEngine.Formatters
         /// </summary>
         /// <param name="negativePattern">Pattern to be used for representing a negative value</param>
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
-        public FormatIntegerAttribute(int negativePattern = 0, string groupSeparator = null)
+        public FormatIntegerAttribute(int negativePattern = 0, string? groupSeparator = null)
         {
             FormatInfo = (NumberFormatInfo)Culture.NumberFormat.Clone();
             FormatString = "N0";
@@ -48,8 +48,9 @@ namespace TemplateEngine.Formatters
         /// Integer format constructor that accepts a format string
         /// </summary>
         /// <param name="formatString">Integer format string</param>
-        public FormatIntegerAttribute(string formatString)
+        public FormatIntegerAttribute(string? formatString)
         {
+            FormatInfo = (NumberFormatInfo)Culture.NumberFormat.Clone();
             FormatString = formatString;
         }
 
@@ -65,14 +66,14 @@ namespace TemplateEngine.Formatters
 
         private NumberFormatInfo FormatInfo { get; }
 
-        private string FormatString { get; }
+        private string? FormatString { get; }
 
         /// <summary>
         /// Formats an object using the elements provided to this formatter's constructor
         /// </summary>
         /// <param name="data">Data to be formatted</param>
         /// <returns>Object data formatted as an integer string</returns>
-        public override string FormatData(object data)
+        public override string FormatData(object? data)
         {
             if (data == null) return "";
 

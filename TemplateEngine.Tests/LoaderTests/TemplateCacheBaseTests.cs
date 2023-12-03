@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,15 +40,15 @@ namespace TemplateEngine.Tests.LoaderTests
         public void TestGetTemplate()
         {
             // create a template cache using the mock cache and mock loader
-            var cache = new TemplateCache<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var cache = new TemplateCacheBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object, mocks.MockCache);
 
             mocks.Templates.Iterate((t, i) =>
             {
-                var fileName = mocks.FileNames.ElementAt(i);
+                var fileName = TemplateMocks.FileNames.ElementAt(i);
                 var template = cache.GetTemplate(fileName);
 
-                template.ToString().Should().Be(mocks.TemplateText.ElementAt(i));
+                template.ToString().Should().Be(TemplateMocks.TemplateText.ElementAt(i));
                 template.TemplateId.Should().NotBe(mocks.Templates.ElementAt(i).TemplateId);
             });
         }
@@ -57,15 +57,15 @@ namespace TemplateEngine.Tests.LoaderTests
         public async Task TestGetTemplateAsync()
         {
             // create a template cache using the mock cache and mock loader
-            var cache = new TemplateCache<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
+            var cache = new TemplateCacheBase<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
                 mocks.MockWriterFactory.Object, mocks.MockCache);
 
             await mocks.Templates.IterateAsync(async (t, i) =>
             {
-                var fileName = mocks.FileNames.ElementAt(i);
+                var fileName = TemplateMocks.FileNames.ElementAt(i);
                 var template = await cache.GetTemplateAsync(fileName);
 
-                template.ToString().Should().Be(mocks.TemplateText.ElementAt(i));
+                template.ToString().Should().Be(TemplateMocks.TemplateText.ElementAt(i));
                 template.TemplateId.Should().NotBe(mocks.Templates.ElementAt(i).TemplateId);
             });
         }
@@ -74,15 +74,14 @@ namespace TemplateEngine.Tests.LoaderTests
         public void TestIsTemplateCached()
         {
             // create a template cache using the mock cache and mock loader
-            var mockAppCache = mocks.MockCache;
-            var cache = new TemplateCache<ITemplateWriter>(mocks.TemplateDirectory, mocks.MockTemplateFactory.Object,
-                mocks.MockWriterFactory.Object, mockAppCache);
+            var cache = new TemplateCacheBase<ITemplateWriter>(mocks.TemplateDirectory,
+                mocks.MockTemplateFactory.Object, mocks.MockWriterFactory.Object, new TestAppCache());
 
-            mocks.FileNames.Iterate((f, i) =>
+            TemplateMocks.FileNames.Iterate((f, i) =>
             {
                 var template = mocks.Templates.ElementAt(i);
                 cache.IsTemplateCached(f).Should().BeFalse();
-                mockAppCache.Add(f, template);
+                cache.GetTemplate(f);
                 cache.IsTemplateCached(f).Should().BeTrue();
             });
         }

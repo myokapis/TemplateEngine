@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TemplateEngine.Document;
 using TemplateEngine.Loader;
 using TemplateEngine.Web;
 
@@ -27,7 +26,7 @@ namespace TemplateEngine.AspNetCore.Extensions
 {
 
     /// <summary>
-    /// Template Engine-specific xtension methods for IServiceCollection
+    /// Template Engine-specific extension methods for IServiceCollection
     /// </summary>
     public static class IServiceCollectionExtensions
     {
@@ -54,6 +53,7 @@ namespace TemplateEngine.AspNetCore.Extensions
             // reflect all classes in assembly to find and add all that implement the base class or interface
             var baseType = typeof(TBase);
             var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null) return services;
 
             // choose only classes and ignore the base class
             var subClasses = assembly.GetTypes()
@@ -77,7 +77,7 @@ namespace TemplateEngine.AspNetCore.Extensions
             services.TryAddSingleton<ITemplateCache<IWebWriter>>(serviceProvider =>
             {
                 var settings = serviceProvider
-                    .GetService<SettingsFactory>()
+                    .GetService<SettingsFactory>()!
                     .Settings;
 
                 return new WebTemplateCache(settings.TemplateDirectory);
@@ -96,13 +96,10 @@ namespace TemplateEngine.AspNetCore.Extensions
             services.TryAddSingleton<ITemplateLoader<IWebWriter>>(serviceProvider =>
             {
                 var settings = serviceProvider
-                    .GetService<SettingsFactory>()
+                    .GetService<SettingsFactory>()!
                     .Settings;
 
-                return new TemplateLoader<IWebWriter>(
-                    settings.TemplateDirectory,
-                    (text) => new Template(text),
-                    (template) => new WebWriter(template));
+                return new WebLoader(settings.TemplateDirectory);
 
             });
 
@@ -117,7 +114,7 @@ namespace TemplateEngine.AspNetCore.Extensions
         /// <param name="settings">Optional settings to be registered</param>
         /// <returns>The service collection</returns>
         public static IServiceCollection AddTemplateEngine(this IServiceCollection services,
-            IConfiguration configuration = null, TemplateEngineSettings settings = null)
+            IConfiguration? configuration = null, TemplateEngineSettings? settings = null)
         {
             services.AddTemplateEngine<MasterPresenterBase>(configuration, settings);
             return services;
@@ -132,7 +129,7 @@ namespace TemplateEngine.AspNetCore.Extensions
         /// <param name="settings">Optional settings to be registered</param>
         /// <returns>The service collection</returns>
         public static IServiceCollection AddTemplateEngine<T>(this IServiceCollection services,
-            IConfiguration configuration, TemplateEngineSettings settings = null)
+            IConfiguration? configuration, TemplateEngineSettings? settings = null)
         {
             var settingsInstance = settings;
             services.TryAddSingleton<SettingsFactory>();
@@ -163,7 +160,7 @@ namespace TemplateEngine.AspNetCore.Extensions
         public static IServiceCollection AddTemplateSettings(this IServiceCollection services)
         {
             services.TryAddSingleton<SettingsFactory>();
-            services.TryAddSingleton(serviceProvider => serviceProvider.GetService<SettingsFactory>().Settings);
+            services.TryAddSingleton(serviceProvider => serviceProvider.GetService<SettingsFactory>()!.Settings);
             return services;
         }
 

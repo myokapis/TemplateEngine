@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,36 +30,36 @@ namespace TemplateEngine.Document
         /// Gets or sets the value of a field
         /// </summary>
         /// <remarks>Field name is the key</remarks>
-        public Dictionary<string, string> FieldValues { get; set; }
+        public Dictionary<string, string?> FieldValues { get; set; } = new Dictionary<string, string?>();
 
         /// <summary>
         /// Gets or sets the field writer associated with a field
         /// </summary>
         /// <remarks>Field name is the key</remarks>
-        public Dictionary<string, ITemplateWriter> FieldWriters { get; set; }
+        public Dictionary<string, ITemplateWriter> FieldWriters { get; set; } = new Dictionary<string, ITemplateWriter>();
 
         /// <summary>
         /// Gets or sets the section writer associated with a section
         /// </summary>
         /// <remarks>Section name is the key</remarks>
-        public Dictionary<string, ITemplateWriter> SectionWriters { get; set; }
+        public Dictionary<string, ITemplateWriter> SectionWriters { get; set; } = new Dictionary<string, ITemplateWriter>();
 
         /// <summary>
         /// Empties the value set of all field values, field writers, and section writers
         /// </summary>
         public void Clear()
         {
-            FieldValues?.Clear();
-            FieldWriters?.Clear();
-            SectionWriters?.Clear();
+            FieldValues.Clear();
+            FieldWriters.Clear();
+            SectionWriters.Clear();
         }
 
         /// <summary>
         /// Returns true if the value set has been populated
         /// </summary>
-        public bool HasData => (FieldValues?.Any(v => v.Value != null) ?? false)
-            || (FieldWriters?.Count ?? 0) > 0
-            || (SectionWriters?.Count ?? 0) > 0;
+        public bool HasData => FieldValues.Any(v => v.Value != null)
+            || FieldWriters.Count > 0
+            || SectionWriters.Count > 0;
 
     }
 

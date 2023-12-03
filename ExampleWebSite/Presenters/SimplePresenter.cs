@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ namespace ExampleWebSite.Presenters
             var writer = await templateLoader.GetWriterAsync("Simple.tpl", "POPUP");
 
             // generate html for the items unless there are no selected items in which case append static html
-            if (items.Count() > 0)
+            if (items.Any())
                 // generate html for the items using the POPUP_ITEMS section of the content template
                 writer.SetMultiSectionFields("POPUP_ITEMS", items);
             else

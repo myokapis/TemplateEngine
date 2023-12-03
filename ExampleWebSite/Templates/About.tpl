@@ -1,6 +1,6 @@
 ﻿<!--
 /* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -57,18 +57,27 @@ limitations under the License.
 				<tr>
 					<td>3.x</td>
 					<td>.Net Core 3.1</td>
-					<td>Current</td>
+					<td>No longer supported</td>
 					<td></td>
 				</tr>
 				<tr>
 					<td>6.0</td>
 					<td>.Net 6</td>
+					<td>Current</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>8.0</td>
+					<td>.Net 8</td>
 					<td>Future</td>
 					<td>
 						<ul>
 							<li>Differentiate between form data fields and globalized text fields</li>
 							<li>Automatic registration and rendering of field providers</li>
 							<li>Methods to simplify selecting nested sections</li>
+							<li>Allow iteration of field names and fields</li>
+							<li>Improvements to ViewModelAccessor</li>
 						</ul>
 					</td>
 				</tr>

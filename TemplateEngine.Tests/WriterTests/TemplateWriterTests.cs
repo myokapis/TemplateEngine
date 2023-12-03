@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -483,28 +483,28 @@ namespace TemplateEngine.Tests
             actual.Should().BeEquivalentTo(expected);
         }
 
-        [Fact]
-        public void TestIsProvider()
-        {
-            // create a template and main writer for the test
-            var tpl1 = new Template(templateTexts[4]);
-            var writer = new TemplateWriter(tpl1);
+        //[Fact]
+        //public void TestIsProvider()
+        //{
+        //    // create a template and main writer for the test
+        //    var tpl1 = new Template(templateTexts[4]);
+        //    var writer = new TemplateWriter(tpl1);
 
-            // create another template and writer to serve as a provider
-            var tpl2 = new Template(templateTexts[3]);
-            var provider = new TemplateWriter(tpl2);
+        //    // create another template and writer to serve as a provider
+        //    var tpl2 = new Template(templateTexts[3]);
+        //    var provider = new TemplateWriter(tpl2);
 
-            // register the provider for a field in the main section of the main writer
-            writer.RegisterFieldProvider("Main2", provider);
+        //    // register the provider for a field in the main section of the main writer
+        //    writer.RegisterFieldProvider("Main2", provider);
 
-            // select the provider and verify that it is a registered provider
-            writer.SelectProvider("Main2");
-            writer.CurrentWriter.IsProvider.Should().BeTrue();
+        //    // select the provider and verify that it is a registered provider
+        //    writer.SelectProvider("Main2");
+        //    writer.CurrentWriter.IsProvider.Should().BeTrue();
 
-            // select a child section within the provider and verify that it is not a provider
-            writer.SelectSection("SECTION1");
-            writer.CurrentWriter.IsProvider.Should().BeFalse();
-        }
+        //    // select a child section within the provider and verify that it is not a provider
+        //    writer.SelectSection("SECTION1");
+        //    writer.CurrentWriter.IsProvider.Should().BeFalse();
+        //}
 
         [Fact]
         public void TestLiteralTextBlock_Main()

@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ namespace TemplateEngine.Document
         /// <param name="text">Text belonging to the block</param>
         /// <param name="referenceName">The name associated with the text block</param>
         /// <param name="tagText">Text associated with the section tag</param>
-        public TextBlock(TextBlockType type, string text, string referenceName = null, string tagText = null)
+        public TextBlock(TextBlockType type, string text, string referenceName = "", string tagText = "")
         {
             ReferenceName = referenceName;
             TagText = tagText;

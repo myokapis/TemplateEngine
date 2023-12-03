@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 
 using System;
 using TemplateEngine.Document;
+using TemplateEngine.Web;
 using TemplateEngine.Writer;
 
 namespace TemplateEngine.Loader
@@ -24,7 +25,7 @@ namespace TemplateEngine.Loader
     /// <summary>
     /// An opinionated convenience class for loading templates and creating template writers
     /// </summary>
-    public class TemplateLoader : TemplateLoader<ITemplateWriter>
+    public class TemplateLoader : TemplateLoaderBase<ITemplateWriter>
     {
 
         /// <summary>

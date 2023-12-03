@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ namespace TemplateEngine.Tests.DocumentTests
         {
             var valueSet = new ValueSet
             {
-                FieldValues = new Dictionary<string, string>
+                FieldValues = new Dictionary<string, string?>
                 {
                     { "One", "1" },
                     { "Two", "2" },
@@ -50,7 +50,7 @@ namespace TemplateEngine.Tests.DocumentTests
                 {
                     { "One", mocks.MockWriters.First() }
                 },
-                SectionWriters = mocks.MockWriters.Skip(1).Take(2).ToDictionary(k => k.WriterId.ToString(), v => v)
+                SectionWriters = mocks.MockWriters.Skip(1).Take(2).ToDictionary(k => k.WriterId.ToString(), v => (ITemplateWriter)v)
             };
 
             valueSet.FieldValues.Count.Should().Be(3);
@@ -69,7 +69,7 @@ namespace TemplateEngine.Tests.DocumentTests
         {
             var valueSet = new ValueSet
             {
-                FieldValues = new Dictionary<string, string>
+                FieldValues = new Dictionary<string, string?>
                 {
                     { "One", "1" }
                 },
@@ -91,7 +91,7 @@ namespace TemplateEngine.Tests.DocumentTests
         {
             var valueSet = new ValueSet
             {
-                FieldValues = new Dictionary<string, string>
+                FieldValues = new Dictionary<string, string?>
                 {
                     { "One", "1" }
                 },
@@ -107,7 +107,7 @@ namespace TemplateEngine.Tests.DocumentTests
         {
             var valueSet = new ValueSet
             {
-                FieldValues = new Dictionary<string, string>(),
+                FieldValues = new Dictionary<string, string?>(),
                 FieldWriters = new Dictionary<string, ITemplateWriter>
                 {
                     { "One", mocks.MockWriters.First() }
@@ -123,7 +123,7 @@ namespace TemplateEngine.Tests.DocumentTests
         {
             var valueSet = new ValueSet
             {
-                FieldValues = new Dictionary<string, string>(),
+                FieldValues = new Dictionary<string, string?>(),
                 FieldWriters = new Dictionary<string, ITemplateWriter>(),
                 SectionWriters = new Dictionary<string, ITemplateWriter>()
             };
@@ -136,7 +136,7 @@ namespace TemplateEngine.Tests.DocumentTests
         {
             var valueSet = new ValueSet
             {
-                FieldValues = new Dictionary<string, string>(),
+                FieldValues = new Dictionary<string, string?>(),
                 FieldWriters = new Dictionary<string, ITemplateWriter>(),
                 SectionWriters = new Dictionary<string, ITemplateWriter>
                 {

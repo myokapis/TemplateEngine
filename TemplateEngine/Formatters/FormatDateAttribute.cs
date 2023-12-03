@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ namespace TemplateEngine.Formatters
         /// Date format constructor that accepts a format string
         /// </summary>
         /// <param name="formatString">Date format string</param>
-        public FormatDateAttribute(string formatString)
+        public FormatDateAttribute(string? formatString)
         {
+            //FormatInfo = new DateTimeFormatInfo();
+            FormatInfo = (DateTimeFormatInfo)Culture.DateTimeFormat.Clone();
             FormatString = formatString ?? "G";
         }
 
@@ -41,7 +43,7 @@ namespace TemplateEngine.Formatters
         /// <param name="formatInfo">A <see cref="DateTimeFormatInfo" /> to be used for formatting</param>
         /// <param name="formatString">An optional string defining the output format</param>
 
-        public FormatDateAttribute(DateTimeFormatInfo formatInfo, string formatString = null)
+        public FormatDateAttribute(DateTimeFormatInfo formatInfo, string? formatString = null)
         {
             FormatInfo = formatInfo;
             FormatString = formatString ?? "G";
@@ -56,7 +58,7 @@ namespace TemplateEngine.Formatters
         /// </summary>
         /// <param name="data">Data to be formatted</param>
         /// <returns>Object data formatted as a date string</returns>
-        public override string FormatData(object data)
+        public override string FormatData(object? data)
         {
             if (data == null) return "";
 

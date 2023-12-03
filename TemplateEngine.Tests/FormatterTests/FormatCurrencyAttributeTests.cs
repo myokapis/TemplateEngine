@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ namespace TemplateEngine.Tests.FormatterTests
         [MemberData(nameof(GetTestData))]
         public void TestFormatCurrencyAttribute_WithFormatString(object testData)
         {
-            var data = testData as FormatterTestInfo;
+            var data = (FormatterTestInfo)testData;
 
             if (data.FormatStringCurrency != null)
             {
@@ -51,7 +51,7 @@ namespace TemplateEngine.Tests.FormatterTests
         [MemberData(nameof(GetTestData))]
         public void TestFormatCurrencyAttribute_WithFormatInfo(object testData)
         {
-            var data = testData as FormatterTestInfo;
+            var data = (FormatterTestInfo)testData;
 
             FormatterTestHelpers.TestInCulture(data.Culture, () =>
             {
@@ -65,7 +65,7 @@ namespace TemplateEngine.Tests.FormatterTests
         [MemberData(nameof(GetTestData))]
         public void TestFormatCurrencyAttribute_WithParams(object testData)
         {
-            var data = testData as FormatterTestInfo;
+            var data = (FormatterTestInfo)testData;
 
             FormatterTestHelpers.TestInCulture(data.Culture, () =>
             {

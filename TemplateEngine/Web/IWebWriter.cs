@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace TemplateEngine.Web
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="sectionName">Name of the section in which to set fields</param>
         /// <param name="data">Data collection</param>
-        /// <param name="fieldDefinitions">see <cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         void SetMultiSectionFields<T>(string sectionName, IEnumerable<T> data, FieldDefinitions fieldDefinitions);
 
         /// <summary>
@@ -47,8 +47,8 @@ namespace TemplateEngine.Web
         /// </summary>
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="data">Data collection</param>
-        /// <param name="fieldDefinitions">see <cref="FieldDefinitions" /> object that defines special fields</param>
-        void SetMultiSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions = null);
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
+        void SetMultiSectionFields<T>(IEnumerable<T> data, FieldDefinitions fieldDefinitions);
 
         /// <summary>
         /// Sets option fields in a section
@@ -56,7 +56,7 @@ namespace TemplateEngine.Web
         /// <param name="sectionName">Name of the option section</param>
         /// <param name="data">Option data</param>
         /// <param name="selectedValue">Value of the selected option</param>
-        void SetOptionFields(string sectionName, IEnumerable<Option> data, string selectedValue = null);
+        void SetOptionFields(string sectionName, IEnumerable<Option> data, string? selectedValue = null);
 
         /// <summary>
         /// Sets section fields from a data object
@@ -65,7 +65,7 @@ namespace TemplateEngine.Web
         /// <param name="sectionName">Name of the section to set</param>
         /// <param name="data">Data object</param>
         /// <param name="sectionOptions"><see cref="SectionOptions" /> for desired append and deselect behavior</param>
-        /// <param name="fieldDefinitions">see <cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         void SetSectionFields<T>(string sectionName, T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions);
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace TemplateEngine.Web
         /// <typeparam name="T">Type of the data object</typeparam>
         /// <param name="data">Data object</param>
         /// <param name="sectionOptions"><see cref="SectionOptions" /> for desired append and deselect behavior</param>
-        /// <param name="fieldDefinitions">see <cref="FieldDefinitions" /> object that defines special fields</param>
+        /// <param name="fieldDefinitions"><see cref="FieldDefinitions" /> object that defines special fields</param>
         void SetSectionFields<T>(T data, SectionOptions sectionOptions, FieldDefinitions fieldDefinitions);
 
     }

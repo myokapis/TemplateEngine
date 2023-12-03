@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ namespace TemplateEngine.Web
     /// <summary>
     /// An opinionated convenience class for creating templates and web template writers
     /// </summary>
-    public class WebLoader : TemplateLoader<IWebWriter>
+    public class WebLoader : TemplateLoaderBase<IWebWriter>
     {
 
         /// <summary>

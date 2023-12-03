@@ -1,5 +1,5 @@
 ﻿/* ****************************************************************************
-Copyright 2018-2022 Gene Graves
+Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ namespace TemplateEngine.Formatters
         /// <param name="groupSeparator">Character to be used to delimit thousand groups</param>
         /// <param name="decimalSeparator">Character to be used as a decimal separator</param>
         public FormatNumberAttribute(int decimalPlaces = 2, int negativePattern = 0,
-            string groupSeparator = null, string decimalSeparator = null)
+            string? groupSeparator = null, string? decimalSeparator = null)
         {
             FormatInfo = (NumberFormatInfo)Culture.NumberFormat.Clone();
             FormatString = "N";
@@ -60,6 +60,7 @@ namespace TemplateEngine.Formatters
         /// <param name="formatString">Numeric format string</param>
         public FormatNumberAttribute(string formatString)
         {
+            FormatInfo = (NumberFormatInfo)Culture.NumberFormat.Clone();
             FormatString = formatString;
         }
 
@@ -82,7 +83,7 @@ namespace TemplateEngine.Formatters
         /// </summary>
         /// <param name="data">Data to be formatted</param>
         /// <returns>Object data formatted as a numeric string</returns>
-        public override string FormatData(object data)
+        public override string FormatData(object? data)
         {
             if (data == null) return "";
 

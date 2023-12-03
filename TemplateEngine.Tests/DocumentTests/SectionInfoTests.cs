@@ -103,10 +103,6 @@ namespace TemplateEngine.Tests.DocumentTests
             var exception = Record.Exception(() => new SectionInfo(sectionInfo, 99, "", "closePrefix2", "closeSuffix2"));
             exception.Should().BeOfType<ArgumentException>();
             exception.Message.Should().Be("The CloseTag cannot be null or empty.");
-
-            //exception = Record.Exception(() => new SectionInfo(sectionInfo, 99, null, "closePrefix2", "closeSuffix2"));
-            //exception.Should().BeOfType<ArgumentException>();
-            //exception.Message.Should().Be("The CloseTag cannot be null or empty.");
         }
 
         [Fact]

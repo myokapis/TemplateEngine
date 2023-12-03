@@ -55,11 +55,6 @@ namespace TemplateEngine.Document
 
         #region Constructors
 
-        //internal Template()
-        //{
-
-        //}
-
         /// <summary>
         /// Constructs a template from raw text
         /// </summary>
@@ -275,11 +270,6 @@ namespace TemplateEngine.Document
         protected List<SectionInfo> GetSubSections(in SectionInfo parentSection, in IEnumerable<SectionInfo> allSections)
         {
             var subSections = new List<SectionInfo>();
-
-            //// don't parse a section if it is a literal section
-            //if (parentSection.IsLiteral)
-            //    return subSections;
-
             (int parentStart, int parentEnd) = parentSection.SubstringRange;
             var parentSectionName = parentSection.SectionName;
 
@@ -297,18 +287,6 @@ namespace TemplateEngine.Document
 
             return subSections;
         }
-
-        ///// <summary>
-        ///// Sets initial values for properties and members
-        ///// </summary>
-        ///// <param name="sectionName"></param>
-        //protected void Init(string sectionName)
-        //{
-        //    fieldNames = new List<string>();
-        //    textBlocks = new List<TextBlock>();
-        //    templates = new Dictionary<string, Template>();
-        //    SectionName = sectionName;
-        //}
 
         /// <summary>
         /// Parses a section of text from a template

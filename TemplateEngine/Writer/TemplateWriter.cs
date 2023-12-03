@@ -210,16 +210,6 @@ namespace TemplateEngine.Writer
             if (deselect) DeselectSection();
         }
 
-        ///// <summary>
-        ///// Convenience method for casting derived types
-        ///// </summary>
-        ///// <typeparam name="T">ITemplateWriter or a derived type</typeparam>
-        ///// <returns>Writer cast as the requested type</returns>
-        //T As<T>() where T : ITemplateWriter
-        //{
-        //    return (T)this;
-        //}
-
         /// <summary>
         /// Resets the data fields in the current section.
         /// </summary>
@@ -698,27 +688,12 @@ namespace TemplateEngine.Writer
         /// <summary>
         /// Creates and initializes a new working value set
         /// </summary>
-        //protected void InitializeValueSet()
-        //{
-        //    var newValueSet = new ValueSet();
-
-        //    newValueSet.FieldValues = template.FieldNames.ToDictionary(n => n, n => (string?)null);
-        //    newValueSet.FieldWriters = registeredSections.ToDictionary(s => s.Key, s => s.Value.Copy());
-        //    newValueSet.SectionWriters = sections.ToDictionary(s => s.Key, s => s.Value.Copy());
-
-        //    valueSet = newValueSet;
-        //}
         protected void InitializeValueSet(ValueSet valueSet)
         {
             valueSet.FieldValues = template.FieldNames.ToDictionary(n => n, n => (string?)null);
             valueSet.FieldWriters = registeredSections.ToDictionary(s => s.Key, s => s.Value.Copy());
             valueSet.SectionWriters = sections.ToDictionary(s => s.Key, s => s.Value.Copy());
         }
-
-        ///// <summary>
-        ///// Indicates if this template is registered as a field provider
-        ///// </summary>
-        //public bool IsProvider { get; protected set; }
 
         /// <summary>
         /// Unique id of this instance
@@ -752,22 +727,8 @@ namespace TemplateEngine.Writer
                 }
                 else if (textBlock.Type == TextBlockType.Section)
                 {
-                    //List<string> extraText = null;
-
                     // get the writer for the given section
                     var writer = valueSet.SectionWriters[textBlock.ReferenceName];
-                    //var hasData = writer.HasData;
-
-                    // get the extra text for the section to be written
-                    //// TODO: see if there was a reason to check extraText (seems like it will always be null)
-                    //if (writer.Template.IsSingleLine && hasData) // && extraText == null)
-                    //{
-                    //    extraText = template.TextBlocks
-                    //        .Where(b => b.ReferenceName == textBlock.ReferenceName
-                    //            && (b.Type == TextBlockType.Prefix || b.Type == TextBlockType.Suffix))
-                    //        .Select(b => b.TagText)
-                    //        .ToList();
-                    //}
 
                     var extraText = template.TextBlocks
                         .Where(b => writer.Template.IsSingleLine && writer.HasData
@@ -776,12 +737,6 @@ namespace TemplateEngine.Writer
                         .Select(b => b.TagText)
                         .ToArray();
 
-                    // write the extra text for the opening tag
-                    //if (extraText != null && hasData)
-                    //{
-                    //    sb.Append(extraText[0]);
-                    //    sb.Append(extraText[1]);
-                    //}
                     if(extraText.Length > 0)
                     {
                         sb.Append(extraText[0]);
@@ -790,12 +745,6 @@ namespace TemplateEngine.Writer
 
                     writer.GetContent(sb);
 
-                    // write the extra text for the closing tag
-                    //if (extraText != null && hasData)
-                    //{
-                    //    sb.Append(extraText[2]);
-                    //    sb.Append(extraText[3]);
-                    //}
                     if (extraText.Length > 0)
                     {
                         sb.Append(extraText[2]);

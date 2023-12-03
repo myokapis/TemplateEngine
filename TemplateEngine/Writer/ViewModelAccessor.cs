@@ -101,11 +101,6 @@ namespace TemplateEngine.Writer
 
         #region "protected methods"
 
-        ///// <summary>
-        ///// A collection of <see cref="PropertyInfo"/> for public properties of this class
-        ///// </summary>
-        //protected static PropertyInfo[] FieldProperties => fieldProperties.Value;
-
         /// <summary>
         /// Formats a property's value using a custom format attribute if one exists. Otherwise
         /// formatting uses the data type's default ToString() behavior.
@@ -128,16 +123,9 @@ namespace TemplateEngine.Writer
         /// </summary>
         protected static PropertyInfo[] GetFieldProperties()
         {
-            //fieldProperties = new List<PropertyInfo>();
-
-            //foreach (PropertyInfo pi in typeof(T).GetProperties())
-            //{
-            //    if (!Attribute.IsDefined(pi, typeof(NotMappedAttribute))) fieldProperties.Add(pi);
-            //}
             return typeof(T).GetProperties()
                 .Where(pi => !Attribute.IsDefined(pi, typeof(NotMappedAttribute)))
                 .ToArray();
-
         }
 
         #endregion

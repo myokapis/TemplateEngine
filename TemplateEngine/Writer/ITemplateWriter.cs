@@ -41,13 +41,6 @@ namespace TemplateEngine.Writer
         /// <param name="deselect">Sets the deselect behavior</param>
         void AppendSection(bool deselect = false);
 
-        ///// <summary>
-        ///// Convenience method for casting derived types
-        ///// </summary>
-        ///// <typeparam name="T">ITemplateWriter or a derived type</typeparam>
-        ///// <returns>Writer cast as the requested type</returns>
-        //T As<T>() where T : ITemplateWriter;
-
         /// <summary>
         /// Resets the data fields in the current section.
         /// </summary>
@@ -101,11 +94,6 @@ namespace TemplateEngine.Writer
         /// Indicates if the template contains any field data
         /// </summary>
         bool HasData { get; }
-
-        ///// <summary>
-        ///// Indicates if this template is registered as a field provider
-        ///// </summary>
-        //bool IsProvider { get; }
 
         /// <summary>
         /// The names of all registered field providers

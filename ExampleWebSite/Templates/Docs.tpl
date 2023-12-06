@@ -402,7 +402,7 @@ limitations under the License.
 									<li>Install the TemplateEngine.AspNetCore Nuget package.</li>
 									<li>Create a Templates directory in the root of your project. Save all of your 
 										template document files to this Templates directory.</li>
-									<li>Call the UseTemplateEngine() extension method on the HostBuilder. This will
+									<li>Call the UseTemplateEngine() extension method on the WebApplicationBuilder. This will
 										set the default template directory and register the following objects for
 										dependency injection.
 										<ul>
@@ -755,11 +755,8 @@ writer.SetSectionFields(dataModel, SectionOptions.AppendDeselect, definitions);
 <!-- @@REGISTRATION_CODE@@ -->
 <pre class="code">
 <!-- **10** -->
-public static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .UseSerilog()
-        .UseTemplateEngine()
-        .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+// add this line to service registration in Program.cs
+builder.Services.AddTemplateEngine();
 <!-- **10** -->
 </pre>
 <!-- @@REGISTRATION_CODE@@ -->

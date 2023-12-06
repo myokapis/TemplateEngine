@@ -24,6 +24,11 @@ namespace TemplateEngine.AspNetCore.Extensions
     /// <summary>
     /// Template Engine-specific extension methods for IHostBuilder
     /// </summary>
+    /// <remarks>
+    /// For .Net 6, IHostBuilder is no longer the recommended builder for web applications.
+    /// It is strongly recommended that you use the WebApplicationBuilder and its
+    /// TemplateEngine extensions instead of IHostBuilder and its extensions.
+    /// </remarks>
     public static class IHostBuilderExtensions
     {
 

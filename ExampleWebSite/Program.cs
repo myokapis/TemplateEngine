@@ -14,56 +14,60 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
+//using System;
+//using Microsoft.AspNetCore.Hosting;
+//using Microsoft.Extensions.Hosting;
 using System;
-using Microsoft.AspNetCore.Hosting;
+using ExampleWebSite.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TemplateEngine.AspNetCore.Extensions;
 
-namespace ExampleWebSite
+// setup a bootstrap logger to capture output until the real logger is configured
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
 {
-    public class Program
+    var builder = WebApplication.CreateBuilder(args);
+
+    var services = builder.Services;
+    services.AddControllers();
+    services.AddTemplateEngine();
+    services.AddSingleton<IDataService, DataService>();
+
+    builder.Host.UseSerilog((context, serilogConfig) => serilogConfig.ReadFrom.Configuration(context.Configuration));
+
+    var app = builder.Build();
+
+    if (!app.Environment.IsDevelopment())
     {
-        public static int Main(string[] args)
-        {
-            // setup a bootstrap logger to capture output until the real logger is configured
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateBootstrapLogger();
-
-            try
-            {
-                CreateHostBuilder(args).Build().Run();
-                return 0;
-            }
-            catch(Exception ex)
-            {
-                Log.Fatal(ex, "Example app failed to start.");
-                return ex.HResult;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-            
-        }
-
-        /// <summary>
-        /// Workhorse method to create a default host builder, register the Serilog logger
-        /// for dependency injection, and register Template Engine components for dependency
-        /// injection.
-        /// </summary>
-        /// <param name="args">The command line arguments</param>
-        /// <returns>An IHostBuilder instance</returns>
-        /// <remarks>The Template Engine components that are registered are 1) TemplateLoader,
-        /// 2) TemplateCache 3) TemplateEngineSettings 4) All classes that descend from the
-        /// MasterPresenterBase class. Additionally, the template directory is set to the path
-        /// provided in the TemplateEngineSettings configuration section or to the default path
-        /// if no usable configuration is found.</remarks>
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseSerilog((context, serilogConfig) => serilogConfig.ReadFrom.Configuration(context.Configuration))
-                .UseTemplateEngine()
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+        app.UseExceptionHandler("/Home/Error");
+        app.UseHsts();
     }
+
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseHttpsRedirection();
+    app.UseSerilogRequestLogging();
+
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+    app.Run();
+        
+    return 0;
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Example app failed to start.");
+    return ex.HResult;
+}
+finally
+{
+    Log.CloseAndFlush();
 }

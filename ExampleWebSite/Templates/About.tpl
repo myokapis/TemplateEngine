@@ -96,7 +96,7 @@ limitations under the License.
 				<tr>
 					<td>TemplateEngine.AspNetCore</td>
 					<td>Automatically registers presenters with DI in Asp.Net Core web applications</td>
-					<td>Currently available for use with Template Engine version 3.x</td>
+					<td>Currently available for use with Template Engine versions 3.x & 6.x</td>
 				</tr>
 				</tbody>
 			</table>

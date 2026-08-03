@@ -1,6 +1,12 @@
 # Template Engine
 TemplateEngine is a library that parses text templates and populates template fields with formatted data. It is compatible with ASP.Net MVC and Web Forms as well as Web API. Although the library was developed for rendering HTML, it can be used for other purposes where data needs to be merged into a text document.
 
+## Installation
+The NuGet package is published as `MyOkapis.TemplateEngine` (and `MyOkapis.TemplateEngine.AspNetCore` for the ASP.Net Core dependency injection extensions) to disambiguate it from an unrelated package that already occupies the `TemplateEngine` package name. The root namespace is `MyOkapis.TemplateEngine`.
+```
+dotnet add package MyOkapis.TemplateEngine
+```
+
 Some of the features and advantages of Template Engine are:
  - Complete separation of code and mark up
  - All parts of the template are accessible and reusable which eliminates a plethora of partial views
@@ -169,7 +175,7 @@ writer.SetOptionFields("OPTIONS_DEMO", data, "M");
 ```
 
 ### Formatting Output
-In addition to automatically binding data models to a section, TemplateEngine provides a set of formatter attributes for decorating model properties to control how bound data is formatted. Formatters are in the TemplateEngine.Formats namespace and currently include attributes for formatting currency, date, integer, number, and percent fields.
+In addition to automatically binding data models to a section, TemplateEngine provides a set of formatter attributes for decorating model properties to control how bound data is formatted. Formatters are in the `MyOkapis.TemplateEngine.Formatters` namespace and currently include attributes for formatting currency, date, integer, number, and percent fields.
 
 ### Partial Templates
 TemplateEngine supports partial templates by allowing a writer to be created for any subsection of a template. This feature is extremely useful for writing single page applications or providing content for pages that use AJAX to replace part of a page's content.

@@ -16,8 +16,8 @@ limitations under the License.
 
 using System.Linq;
 using System.Threading.Tasks;
-using TemplateEngine.Loader;
-using TemplateEngine.Web;
+using MyOkapis.TemplateEngine.Loader;
+using MyOkapis.TemplateEngine.Web;
 using ExampleWebSite.Services;
 
 namespace ExampleWebSite.Presenters

@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TemplateEngine.AspNetCore\TemplateEngine.AspNetCore.csproj" />
-    <ProjectReference Include="..\TemplateEngine\TemplateEngine.csproj" />
+    <ProjectReference Include="..\MyOkapis.TemplateEngine.AspNetCore\MyOkapis.TemplateEngine.AspNetCore.csproj" />
+    <ProjectReference Include="..\MyOkapis.TemplateEngine\MyOkapis.TemplateEngine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

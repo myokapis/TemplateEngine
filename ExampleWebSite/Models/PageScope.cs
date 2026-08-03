@@ -22,7 +22,7 @@ namespace ExampleWebSite.Models
     /// In the example web pages, the selected value in the Filter Options drop down is
     /// retained when navigating between the example pages.
     /// </summary>
-    /// <remarks>While PageScope is not part of TemplateEngine, I personally find it useful
+    /// <remarks>While PageScope is not part of MyOkapis.TemplateEngine, I personally find it useful
     /// for maintaining state between pages.</remarks>
     public class PageScope
     {

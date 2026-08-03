@@ -1,6 +1,6 @@
 ﻿<!--
 /* ****************************************************************************
-Copyright 2018-2023 Gene Graves
+Copyright 2018-2026 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -212,7 +212,7 @@ limitations under the License.
 						<div class="topic-text hidden" data-link="Web">
 							<!-- Web & HTML -->
 							<p>
-								The TemplateEngine.Web namespace contains a number of objects that are useful
+								The MyOkapis.TemplateEngine.Web namespace contains a number of objects that are useful
 								for working with HTML documents.
 							</p>
 							<p>
@@ -393,13 +393,13 @@ limitations under the License.
 							</p>
 							<p>
 								<h4 data-link="Asp.NetCore">Asp.Net Core</h4>
-								The TemplateEngine.AspNetCore Nuget package provides extension methods for
+								The MyOkapis.TemplateEngine.AspNetCore Nuget package provides extension methods for
 								easily integrating Template Engine into an Asp.Net Core web application.
 							<p>
 							<p>
 								To use Template Engine in an Asp.Net Core project follow these steps:
 								<ol>
-									<li>Install the TemplateEngine.AspNetCore Nuget package.</li>
+									<li>Install the MyOkapis.TemplateEngine.AspNetCore Nuget package.</li>
 									<li>Create a Templates directory in the root of your project. Save all of your 
 										template document files to this Templates directory.</li>
 									<li>Call the UseTemplateEngine() extension method on the WebApplicationBuilder. This will
@@ -418,7 +418,7 @@ limitations under the License.
 							</p>
 							<p>
 								<h4 data-link="Formatting">Formatting Output</h4>
-								Template Engine provides a set of format attributes in the TemplateEngine.Formats 
+								Template Engine provides a set of format attributes in the MyOkapis.TemplateEngine.Formatters
 								namespace. A format attribute applied to a model field causes the writer to format
 								the field data using the formatter. Format attributes exist for currency, date, 
 								integer, number, and percent fields.

@@ -1,6 +1,6 @@
 ﻿<!--
 /* ****************************************************************************
-Copyright 2018-2023 Gene Graves
+Copyright 2018-2026 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ limitations under the License.
 				</thead>
 				<tbody>
 				<tr>
-					<td>TemplateEngine.AspNetCore</td>
+					<td>MyOkapis.TemplateEngine.AspNetCore</td>
 					<td>Automatically registers presenters with DI in Asp.Net Core web applications</td>
 					<td>Currently available for use with Template Engine versions 3.x & 6.x</td>
 				</tr>

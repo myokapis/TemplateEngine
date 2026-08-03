@@ -17,9 +17,9 @@ limitations under the License.
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TemplateEngine.Loader;
-using TemplateEngine.Web;
-using TemplateEngine.Writer;
+using MyOkapis.TemplateEngine.Loader;
+using MyOkapis.TemplateEngine.Web;
+using MyOkapis.TemplateEngine.Writer;
 using ExampleWebSite.Models;
 using ExampleWebSite.Services;
 

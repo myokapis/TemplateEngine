@@ -15,8 +15,8 @@ limitations under the License.
 **************************************************************************** */
 
 using System.Threading.Tasks;
-using TemplateEngine.Loader;
-using TemplateEngine.Web;
+using MyOkapis.TemplateEngine.Loader;
+using MyOkapis.TemplateEngine.Web;
 using ExampleWebSite.Models;
 using ExampleWebSite.Services;
 

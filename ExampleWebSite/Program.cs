@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using TemplateEngine.AspNetCore.Extensions;
+using MyOkapis.TemplateEngine.AspNetCore.Extensions;
 
 // setup a bootstrap logger to capture output until the real logger is configured
 Log.Logger = new LoggerConfiguration()

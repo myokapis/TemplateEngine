@@ -1,4 +1,4 @@
-﻿/* ****************************************************************************
+/* ****************************************************************************
 Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ namespace MyOkapis.TemplateEngine.Tests
         public void TestContains()
         {
             var data = new List<string> { "0", "Yes", "l", "Y", "yes", "y", "T", "t", "True", "true", "1", "~" };
-            var actuals = data.Select(d => TrueValues.Contains(d));
+            var actuals = data.Select(d => TrueValues.Default.Contains(d));
             var expected = new List<bool> { false, true, false, true, true, true, true, true, true, true, true, false };
             actuals.Should().BeEquivalentTo(expected);
         }
@@ -38,27 +38,21 @@ namespace MyOkapis.TemplateEngine.Tests
         public void TestDefaultValues()
         {
             var expected = new List<string> { "Yes", "Y", "T", "True", "1" };
-            TrueValues.Values.Should().BeEquivalentTo(expected);
+            TrueValues.Default.Values.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
-        public void TestValues()
+        public void TestCustomInstanceDoesNotAffectDefault()
         {
-            var originalValues = new List<string>(TrueValues.Values);
+            // constructing a custom instance is the supported way to use different True tokens;
+            // it must never mutate the shared Default instance
+            var custom = new TrueValues(new[] { "Cat", "Y", "T", "True", "1" });
 
-            try
-            {
-                // change the list of true values
-                TrueValues.Values.Remove("Yes");
-                TrueValues.Values.Add("Cat");
-                var expected = new List<string> { "Cat", "Y", "T", "True", "1" };
-                TrueValues.Values.Should().BeEquivalentTo(expected);
-            }
-            finally
-            {
-                // TrueValues.Values is static, shared process-wide state; restore it so other tests aren't affected
-                TrueValues.Values = originalValues;
-            }
+            custom.Values.Should().BeEquivalentTo(new List<string> { "Cat", "Y", "T", "True", "1" });
+            custom.Contains("Cat").Should().BeTrue();
+            custom.Contains("Yes").Should().BeFalse();
+
+            TrueValues.Default.Values.Should().BeEquivalentTo(new List<string> { "Yes", "Y", "T", "True", "1" });
         }
 
     }

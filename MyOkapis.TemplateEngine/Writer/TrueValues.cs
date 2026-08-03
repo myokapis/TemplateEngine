@@ -1,4 +1,4 @@
-﻿/* ****************************************************************************
+/* ****************************************************************************
 Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,41 +16,43 @@ limitations under the License.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MyOkapis.TemplateEngine.Writer
 {
 
     /// <summary>
-    /// Helper class containing a list of values that are considered equivalent to True
+    /// An immutable collection of string tokens that are considered equivalent to True.
     /// </summary>
-    public struct TrueValues
+    public sealed class TrueValues
     {
+        private readonly HashSet<string> values;
 
-        // TODO: provide a way for developers to set and get values that are localized
         /// <summary>
-        /// Static constructor to set an initial list of true values
+        /// Constructs a TrueValues instance from a collection of tokens to be considered equivalent to True.
         /// </summary>
-        static TrueValues()
+        /// <param name="values">The tokens to be treated as equivalent to True. Comparisons are
+        /// case-insensitive using ordinal rules.</param>
+        public TrueValues(IEnumerable<string> values)
         {
-            Values = new List<string> { "Yes", "Y", "T", "True", "1" };
+            this.values = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Helper method to check if a given value is equivalent to True
+        /// The default set of tokens considered equivalent to True: "Yes", "Y", "T", "True", "1"
+        /// </summary>
+        public static TrueValues Default { get; } = new TrueValues(new[] { "Yes", "Y", "T", "True", "1" });
+
+        /// <summary>
+        /// The tokens considered equivalent to True
+        /// </summary>
+        public IReadOnlySet<string> Values => values;
+
+        /// <summary>
+        /// Checks if a given value is equivalent to True
         /// </summary>
         /// <param name="value">Value to test</param>
         /// <returns>True or False</returns>
-        public static bool Contains(string value)
-        {
-            return Values.Any(v => string.Equals(value, v, StringComparison.CurrentCultureIgnoreCase));
-        }
-
-        /// <summary>
-        /// The list of values that are considered equivalent to True
-        /// </summary>
-        public static List<string> Values { get; set; }
-
+        public bool Contains(string value) => values.Contains(value);
     }
 
 }

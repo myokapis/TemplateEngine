@@ -1,4 +1,4 @@
-﻿/* ****************************************************************************
+/* ****************************************************************************
 Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using MyOkapis.TemplateEngine.Formatters;
 
 namespace MyOkapis.TemplateEngine.Writer
@@ -33,11 +34,9 @@ namespace MyOkapis.TemplateEngine.Writer
     /// <typeparam name="T">Type of the data object</typeparam>
     public class ViewModelAccessor<T>
     {
-        private static object[] indexes = new object[] { };
+        private static readonly Lazy<FieldAccessor[]> fieldAccessors =
+            new Lazy<FieldAccessor[]>(GetFieldAccessors, LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private static Lazy<PropertyInfo[]> fieldProperties =
-            new Lazy<PropertyInfo[]>(GetFieldProperties, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
-        
         /// <summary>
         /// Creates a model accessor from a data object
         /// </summary>
@@ -50,7 +49,7 @@ namespace MyOkapis.TemplateEngine.Writer
         /// <summary>
         /// Count of accessible property fields on the data object
         /// </summary>
-        public int Count => fieldProperties.Value.Length;
+        public int Count => fieldAccessors.Value.Length;
 
         /// <summary>
         /// A collection of key-value pairs containing each field name and its corresponding value
@@ -59,9 +58,9 @@ namespace MyOkapis.TemplateEngine.Writer
         {
             get
             {
-                foreach (PropertyInfo pi in fieldProperties.Value)
+                foreach (var accessor in fieldAccessors.Value)
                 {
-                    yield return new KeyValuePair<string, string>(pi.Name, FormatValue(pi));
+                    yield return new KeyValuePair<string, string>(accessor.PropertyInfo.Name, FormatValue(accessor));
                 }
             }
         }
@@ -80,8 +79,8 @@ namespace MyOkapis.TemplateEngine.Writer
         {
             get
             {
-                var pi = fieldProperties.Value.ElementAt(fieldIndex);
-                return FormatValue(pi);
+                var accessor = fieldAccessors.Value.ElementAt(fieldIndex);
+                return FormatValue(accessor);
             }
         }
 
@@ -94,38 +93,59 @@ namespace MyOkapis.TemplateEngine.Writer
         {
             get
             {
-                var pi = fieldProperties.Value.First(p => p.Name == fieldName);
-                return FormatValue(pi);
+                var accessor = fieldAccessors.Value.First(a => a.PropertyInfo.Name == fieldName);
+                return FormatValue(accessor);
             }
         }
 
         #region "protected methods"
 
         /// <summary>
-        /// Formats a property's value using a custom format attribute if one exists. Otherwise
+        /// Formats a property's value using its cached format attribute if one exists. Otherwise
         /// formatting uses the data type's default ToString() behavior.
         /// </summary>
-        /// <param name="pi">The property whose value will be formatted</param>
+        /// <param name="accessor">The field accessor whose value will be formatted</param>
         /// <returns>A formatted string representing the property's value</returns>
-        protected string FormatValue(PropertyInfo pi)
+        protected string FormatValue(in FieldAccessor accessor)
         {
-            object? value = pi.GetValue(Model);
+            object? value = accessor.PropertyInfo.GetValue(Model);
             if (value == null) return "";
 
-            FormatAttribute? formatter = (Attribute.GetCustomAttribute(pi, typeof(FormatAttribute)) as FormatAttribute);
-            var formattedValue = (formatter == null) ? value.ToString() : formatter.FormatData(value);
+            var formattedValue = accessor.FormatAttribute?.FormatData(value) ?? value.ToString();
             return formattedValue ?? "";
         }
 
         /// <summary>
-        /// A static method that finds public properties of the class. Any properties marked with
-        /// a [NotMapped] attribute are ignored.
+        /// A static method that finds public properties of the class and caches each property's
+        /// format attribute alongside it, avoiding a repeated reflection lookup on every field access.
+        /// Any properties marked with a [NotMapped] attribute are ignored.
         /// </summary>
-        protected static PropertyInfo[] GetFieldProperties()
+        protected static FieldAccessor[] GetFieldAccessors()
         {
             return typeof(T).GetProperties()
                 .Where(pi => !Attribute.IsDefined(pi, typeof(NotMappedAttribute)))
+                .Select(pi => new FieldAccessor
+                {
+                    PropertyInfo = pi,
+                    FormatAttribute = Attribute.GetCustomAttribute(pi, typeof(FormatAttribute)) as FormatAttribute
+                })
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Caches a property together with its resolved format attribute, if any.
+        /// </summary>
+        protected readonly struct FieldAccessor
+        {
+            /// <summary>
+            /// The reflected property info for the property.
+            /// </summary>
+            public required PropertyInfo PropertyInfo { get; init; }
+
+            /// <summary>
+            /// The format attribute attached to the property, if any.
+            /// </summary>
+            public FormatAttribute? FormatAttribute { get; init; }
         }
 
         #endregion

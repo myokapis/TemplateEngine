@@ -240,7 +240,7 @@ namespace MyOkapis.TemplateEngine.Web
 
             if (fieldDefinitions.Checkboxes.Contains(fieldName))
             {
-                var checkedValue = (TrueValues.Contains(value)) ? "checked='checked'" : "";
+                var checkedValue = (TrueValues.Default.Contains(value)) ? "checked='checked'" : "";
                 SetField(fieldName, checkedValue);
                 return true;
             }

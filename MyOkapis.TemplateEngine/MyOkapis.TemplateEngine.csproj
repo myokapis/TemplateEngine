@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Version>10.0.0</Version>
     <PackageId>MyOkapis.TemplateEngine</PackageId>
     <AssemblyName>MyOkapis.TemplateEngine</AssemblyName>

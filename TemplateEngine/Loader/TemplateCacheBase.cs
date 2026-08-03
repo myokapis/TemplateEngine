@@ -16,7 +16,6 @@ limitations under the License.
 
 using System;
 using System.Threading.Tasks;
-using LazyCache;
 using TemplateEngine.Document;
 using TemplateEngine.Writer;
 

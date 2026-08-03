@@ -15,28 +15,25 @@ limitations under the License.
 **************************************************************************** */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using LazyCache;
+using Microsoft.Extensions.Caching.Memory;
 using TemplateEngine.Document;
 
 namespace TemplateEngine.Loader
 {
     /// <summary>
-    /// Default implementation of ICache. Wraps LazyCache.
+    /// Default implementation of ICache. Wraps Microsoft.Extensions.Caching.Memory.
     /// </summary>
-    public class Cache : ICache
+    public class Cache : ICache, IDisposable
     {
-        private IAppCache cache;
+        private readonly MemoryCache cache;
 
         /// <summary>
-        /// Creates a wrapped instance of LazyCache
+        /// Creates a wrapped instance of MemoryCache
         /// </summary>
         public Cache()
         {
-            cache = new CachingService();
+            cache = new MemoryCache(new MemoryCacheOptions());
         }
 
         /// <summary>
@@ -47,7 +44,7 @@ namespace TemplateEngine.Loader
         /// <param name="item">The object to be cached</param>
         public void Add<T>(string key, T item) where T : ITemplate
         {
-            cache.Add(key, item);
+            cache.Set(key, item);
         }
 
         /// <summary>
@@ -58,7 +55,7 @@ namespace TemplateEngine.Loader
         /// <returns>An object if found otherwise null</returns>
         public T Get<T>(string key) where T : ITemplate
         {
-            return cache.Get<T>(key);
+            return cache.Get<T>(key)!;
         }
 
         /// <summary>
@@ -71,7 +68,7 @@ namespace TemplateEngine.Loader
         /// <returns>The cached object associated with the key</returns>
         public T GetOrAdd<T>(string key, Func<T> factory) where T : ITemplate
         {
-            return cache.GetOrAdd<T>(key, factory);
+            return cache.GetOrCreate<T>(key, _ => factory())!;
         }
 
         /// <summary>
@@ -84,7 +81,7 @@ namespace TemplateEngine.Loader
         /// <returns>The cached object associated with the key</returns>
         public async Task<T> GetOrAddAsync<T>(string key, Func<string, Task<T>> factory) where T : ITemplate
         {
-            return await cache.GetOrAddAsync<T>(key, () => factory.Invoke(key));
+            return (await cache.GetOrCreateAsync<T>(key, _ => factory.Invoke(key)))!;
         }
 
         /// <summary>
@@ -94,6 +91,14 @@ namespace TemplateEngine.Loader
         public void Remove(string key)
         {
             cache.Remove(key);
+        }
+
+        /// <summary>
+        /// Disposes the underlying MemoryCache instance.
+        /// </summary>
+        public void Dispose()
+        {
+            cache.Dispose();
         }
     }
 }

@@ -14,53 +14,61 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using MyOkapis.TemplateEngine.Formatters;
+using MyOkapis.Formatting;
+using MyOkapis.ObjectAccess;
 
 namespace MyOkapis.TemplateEngine.Writer
 {
 
-    // TODO: consider whether this is thread safe
-
     /// <summary>
-    /// Allows a data object's properties to be accessed by index or name.
-    /// Also allows a data object's properties to be iterated.
+    /// Allows a data object's properties to be accessed by index or name, formatted according to
+    /// any <see cref="IFormatAttribute"/> declared on the property. Also allows a data object's
+    /// properties to be iterated.
     /// </summary>
+    /// <remarks>
+    /// This is a thin composition over <see cref="AccessibleObject{T}"/> (property discovery and
+    /// caching) and <see cref="IFormatter"/> (value-to-string conversion) — it owns neither
+    /// concern itself.
+    /// </remarks>
     /// <typeparam name="T">Type of the data object</typeparam>
     public class ViewModelAccessor<T>
     {
-        private static readonly Lazy<FieldAccessor[]> fieldAccessors =
-            new Lazy<FieldAccessor[]>(GetFieldAccessors, LazyThreadSafetyMode.ExecutionAndPublication);
+        private readonly AccessibleObject<T> accessibleObject;
+        private readonly IFormatter formatter;
 
         /// <summary>
-        /// Creates a model accessor from a data object
+        /// Creates a model accessor from a data object, using the default formatter.
         /// </summary>
         /// <param name="model">The data object for which properties will be accessed</param>
-        public ViewModelAccessor(T model)
+        public ViewModelAccessor(T model) : this(model, Formatter.Default) { }
+
+        /// <summary>
+        /// Creates a model accessor from a data object, using the supplied formatter.
+        /// </summary>
+        /// <param name="model">The data object for which properties will be accessed</param>
+        /// <param name="formatter">The formatter to use when converting field values to strings</param>
+        public ViewModelAccessor(T model, IFormatter formatter)
         {
-            Model = model;
+            accessibleObject = new AccessibleObject<T>(model);
+            this.formatter = formatter;
         }
 
         /// <summary>
         /// Count of accessible property fields on the data object
         /// </summary>
-        public int Count => fieldAccessors.Value.Length;
+        public int Count => accessibleObject.Count;
 
         /// <summary>
-        /// A collection of key-value pairs containing each field name and its corresponding value
+        /// A collection of key-value pairs containing each field name and its corresponding
+        /// formatted value
         /// </summary>
         public IEnumerable<KeyValuePair<string, string>> FieldValues
         {
             get
             {
-                foreach (var accessor in fieldAccessors.Value)
+                foreach (var (descriptor, value) in accessibleObject.Values)
                 {
-                    yield return new KeyValuePair<string, string>(accessor.PropertyInfo.Name, FormatValue(accessor));
+                    yield return new KeyValuePair<string, string>(descriptor.Name, FormatValue(descriptor, value));
                 }
             }
         }
@@ -68,10 +76,10 @@ namespace MyOkapis.TemplateEngine.Writer
         /// <summary>
         /// The data object for which properties will be accessed
         /// </summary>
-        public T Model { get; }
+        public T Model => accessibleObject.Model;
 
         /// <summary>
-        /// Returns a field value based on a field index
+        /// Returns a formatted field value based on a field index
         /// </summary>
         /// <param name="fieldIndex">The index of the field to be accessed</param>
         /// <returns>A string representing the value of the field</returns>
@@ -79,13 +87,13 @@ namespace MyOkapis.TemplateEngine.Writer
         {
             get
             {
-                var accessor = fieldAccessors.Value.ElementAt(fieldIndex);
-                return FormatValue(accessor);
+                var descriptor = AccessibleObject<T>.Fields[fieldIndex];
+                return FormatValue(descriptor, accessibleObject.GetValue(descriptor));
             }
         }
 
         /// <summary>
-        /// Returns a field value based on a field name
+        /// Returns a formatted field value based on a field name
         /// </summary>
         /// <param name="fieldName">The name of the field to be accessed</param>
         /// <returns>A string representing the value of the field</returns>
@@ -93,61 +101,22 @@ namespace MyOkapis.TemplateEngine.Writer
         {
             get
             {
-                var accessor = fieldAccessors.Value.First(a => a.PropertyInfo.Name == fieldName);
-                return FormatValue(accessor);
+                var descriptor = AccessibleObject<T>.Fields.First(f => f.Name == fieldName);
+                return FormatValue(descriptor, accessibleObject.GetValue(descriptor));
             }
         }
 
-        #region "protected methods"
-
         /// <summary>
-        /// Formats a property's value using its cached format attribute if one exists. Otherwise
-        /// formatting uses the data type's default ToString() behavior.
+        /// Formats a field's value using its format attribute, if one exists. Otherwise formatting
+        /// uses the data type's default ToString() behavior.
         /// </summary>
-        /// <param name="accessor">The field accessor whose value will be formatted</param>
-        /// <returns>A formatted string representing the property's value</returns>
-        protected string FormatValue(in FieldAccessor accessor)
+        /// <param name="field">The field descriptor whose value will be formatted</param>
+        /// <param name="value">The raw field value</param>
+        /// <returns>A formatted string representing the field's value</returns>
+        protected string FormatValue(FieldDescriptor field, object? value)
         {
-            object? value = accessor.PropertyInfo.GetValue(Model);
-            if (value == null) return "";
-
-            var formattedValue = accessor.FormatAttribute?.FormatData(value) ?? value.ToString();
-            return formattedValue ?? "";
+            var formatAttribute = field.GetAttribute<IFormatAttribute>();
+            return formatter.Format(value, formatAttribute);
         }
-
-        /// <summary>
-        /// A static method that finds public properties of the class and caches each property's
-        /// format attribute alongside it, avoiding a repeated reflection lookup on every field access.
-        /// Any properties marked with a [NotMapped] attribute are ignored.
-        /// </summary>
-        protected static FieldAccessor[] GetFieldAccessors()
-        {
-            return typeof(T).GetProperties()
-                .Where(pi => !Attribute.IsDefined(pi, typeof(NotMappedAttribute)))
-                .Select(pi => new FieldAccessor
-                {
-                    PropertyInfo = pi,
-                    FormatAttribute = Attribute.GetCustomAttribute(pi, typeof(FormatAttribute)) as FormatAttribute
-                })
-                .ToArray();
-        }
-
-        /// <summary>
-        /// Caches a property together with its resolved format attribute, if any.
-        /// </summary>
-        protected readonly struct FieldAccessor
-        {
-            /// <summary>
-            /// The reflected property info for the property.
-            /// </summary>
-            public required PropertyInfo PropertyInfo { get; init; }
-
-            /// <summary>
-            /// The format attribute attached to the property, if any.
-            /// </summary>
-            public FormatAttribute? FormatAttribute { get; init; }
-        }
-
-        #endregion
     }
 }

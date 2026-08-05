@@ -34,6 +34,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyOkapis.ObjectAccess\MyOkapis.ObjectAccess.csproj" />
+    <ProjectReference Include="..\MyOkapis.Formatting\MyOkapis.Formatting.csproj" />
+  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

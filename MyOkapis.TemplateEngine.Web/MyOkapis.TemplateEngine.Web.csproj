@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>10.0.0</Version>
+    <Authors>Gene Graves</Authors>
+    <Company>$(Authors)</Company>
+    <Description>HTML-specific TemplateEngine writer extensions: checkboxes, dropdowns, and presenter base classes.</Description>
+    <PackageProjectUrl>https://github.com/myokapis/TemplateEngine</PackageProjectUrl>
+    <PackageTags>template web html document</PackageTags>
+    <Copyright>Copyright © Gene Graves 2018-2026</Copyright>
+    <AssemblyVersion>10.0.0.0</AssemblyVersion>
+    <FileVersion>10.0.0.0</FileVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/myokapis/TemplateEngine</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyOkapis.TemplateEngine\MyOkapis.TemplateEngine.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,120 @@
+name: Publish NuGet Package
+
+# Triggered by pushing a tag of the form <ProjectName>-<major.minor.patch>[-rcN], e.g.
+#   MyOkapis.ObjectAccess-1.0.0
+#   MyOkapis.ObjectAccess-1.0.0-rc1
+#
+# <ProjectName> must exactly match a project directory/csproj name in this repo, and the version
+# must exactly match that project's <Version> element. Any other tag shape fails validation before
+# any build step runs. See MyOkapis.ObjectAccess.csproj etc. for the projects this applies to.
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse and validate tag format
+        id: tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "Tag: $TAG"
+
+          if [[ ! "$TAG" =~ ^([A-Za-z0-9.]+)-([0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?)$ ]]; then
+            echo "::error::Tag '$TAG' does not match the required format <ProjectName>-<major.minor.patch>[-rcN]."
+            exit 1
+          fi
+
+          echo "project=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+
+      - name: Locate project
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROJECT_NAME="${{ steps.tag.outputs.project }}"
+          CSPROJ_PATH="$PROJECT_NAME/$PROJECT_NAME.csproj"
+
+          if [[ ! -f "$CSPROJ_PATH" ]]; then
+            echo "::error::No project found at '$CSPROJ_PATH'. The tag base name must exactly match a project name."
+            exit 1
+          fi
+
+          echo "csproj=$CSPROJ_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag version matches project version
+        shell: bash
+        run: |
+          set -euo pipefail
+          CSPROJ_PATH="${{ steps.locate.outputs.csproj }}"
+          TAG_VERSION="${{ steps.tag.outputs.version }}"
+          PROJECT_VERSION=$(grep -oPm1 '(?<=<Version>)[^<]+' "$CSPROJ_PATH")
+
+          if [[ "$PROJECT_VERSION" != "$TAG_VERSION" ]]; then
+            echo "::error::Tag version '$TAG_VERSION' does not match <Version>$PROJECT_VERSION</Version> in $CSPROJ_PATH."
+            exit 1
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Add GitHub Packages source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet nuget add source https://nuget.pkg.github.com/myokapis/index.json \
+            --name github \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore "${{ steps.locate.outputs.csproj }}"
+
+      - name: Build
+        run: dotnet build "${{ steps.locate.outputs.csproj }}" -c Release --no-restore
+
+      - name: Run tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROJECT_NAME="${{ steps.tag.outputs.project }}"
+          TEST_CSPROJ="$PROJECT_NAME.Tests/$PROJECT_NAME.Tests.csproj"
+
+          if [[ -f "$TEST_CSPROJ" ]]; then
+            dotnet test "$TEST_CSPROJ" -c Release
+          else
+            echo "::warning::No test project found at '$TEST_CSPROJ' -- publishing without test validation."
+          fi
+
+      - name: Pack
+        run: dotnet pack "${{ steps.locate.outputs.csproj }}" -c Release --no-build -o ./artifacts
+
+      - name: Push package
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --source github \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --skip-duplicate

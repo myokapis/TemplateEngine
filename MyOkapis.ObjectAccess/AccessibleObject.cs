@@ -94,12 +94,16 @@ namespace MyOkapis.ObjectAccess
 
         /// <summary>
         /// Finds the public properties of the type and caches each one alongside its custom
-        /// attributes. Any properties marked with a [NotMapped] attribute are ignored.
+        /// attributes. Any properties marked with a [NotMapped] attribute are ignored, as are
+        /// properties declared on <see cref="AccessibleObjectBase{T}"/> itself (bookkeeping
+        /// members, not data, for types that opt into the direct-implementation pattern).
         /// </summary>
         protected static FieldDescriptor[] GetFieldDescriptors()
         {
             return typeof(T).GetProperties()
                 .Where(pi => !Attribute.IsDefined(pi, typeof(NotMappedAttribute)))
+                .Where(pi => !(pi.DeclaringType?.IsGenericType == true
+                    && pi.DeclaringType.GetGenericTypeDefinition() == typeof(AccessibleObjectBase<>)))
                 .Select(pi => new FieldDescriptor(pi))
                 .ToArray();
         }

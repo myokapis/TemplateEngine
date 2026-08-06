@@ -100,57 +100,40 @@ once there's a clearer sense of what's wrong with it (the constructor-string-bas
 field registration is the likely starting point, but this needs its own scoping pass rather than
 guessing at a fix here).
 
-### 10. Deferred: direct-interface-implementation pattern for `MyOkapis.ObjectAccess` (do this when the mapping/serialization project starts)
-**Where:** `MyOkapis.ObjectAccess`
+### 10. Done: direct-interface-implementation pattern for `MyOkapis.ObjectAccess`
+**Where:** `MyOkapis.ObjectAccess/IAccessibleObject.cs`, `AccessibleObjectBase.cs`
 
-Payment.Message's `IAccessibleMessage<T>`/`AccessibleMessage<T>` use a CRTP base class
-(`class AccessibleMessage<T> : IAccessibleMessage<T> where T : IAccessibleMessage<T>`) that
-concrete message types inherit from directly, giving two things wrapping can't:
-- A non-generic `IAccessibleMessage` interface, so a heterogeneous collection of different message
-  types can be accessed polymorphically (`.FieldDefinitions`) without knowing the concrete type.
-- A `static abstract Fields` member, so field metadata is available with zero instance in hand —
-  useful for schema validation before any message exists.
+Implemented as designed above, as the prerequisite for `MyOkapis.ObjectMapping` and
+`MyOkapis.ObjectSerialization` (see below). `AccessibleObjectBase<T>.Fields` delegates to
+`AccessibleObject<T>.Fields`, so both patterns share one cache per type; `AccessibleObject<T>`'s
+reflection filters out properties declared on `AccessibleObjectBase<T>` itself so its own
+`FieldCount`/`FieldDescriptors` bookkeeping doesn't get treated as data. Those two properties are
+additionally marked `[NotMapped]`/`[JsonIgnore]`/`[XmlIgnore]`, since `MyOkapis.ObjectSerialization`'s
+JSON/XML serializers call directly into `System.Text.Json`/`System.Xml.Serialization`'s own
+reflection (not just the curated `FieldDescriptors` list) — without those attributes,
+`FieldDescriptors` would leak into serialized output carrying raw `PropertyInfo`, which isn't
+serializable at all. `AccessibleObject<T>`'s wrapper pattern is unaffected; both patterns coexist.
 
-`MyOkapis.ObjectAccess`'s `AccessibleObject<T>` is a wrapper (`new AccessibleObject<T>(model)`),
-which is the right default for TemplateEngine's actual use case — it works on any type, including
-ones you don't own (EF entities, third-party DTOs), with zero coupling. Direct implementation would
-force every bound view model to inherit a base class, which is a much bigger ask for TemplateEngine
-consumers than it is for purpose-built message schema classes.
+## Done: `MyOkapis.ObjectMapping` and `MyOkapis.ObjectSerialization`
 
-**Plan:** when the new project supporting Payment.Message-style mapping/serialization is started,
-add the direct-implementation pattern as an *additive* option in `MyOkapis.ObjectAccess`, layered
-on top of the existing wrapper rather than a second parallel reflection/caching implementation:
+Two new packages generalizing Payment.Message's `Mappers/`/`Serializers/` layers — reimplemented
+fresh, not copied, with "Payment"/"Message" avoided throughout per the clean-room requirement.
 
-```csharp
-public interface IAccessibleObject
-{
-    int FieldCount { get; }
-    IEnumerable<FieldDescriptor> FieldDescriptors { get; }
-}
+- **`MyOkapis.ObjectMapping`** — `IMapper`/`IMapper<TSource>`, `Mapper<TSource, TTarget>`,
+  `CompositeMapper<TSource, TTarget>` (renamed from `ParentMapper`), `MapperFactory<TSource>`.
+  Depends only on `MyOkapis.ObjectAccess`. `Mapper<TSource, TTarget>.Map` returns `TTarget` directly
+  (stronger typing than Payment.Message's non-generic return), while still satisfying
+  `IMapper<TSource>.Map`'s non-generic `IAccessibleObject` return via explicit interface
+  implementation, for the polymorphic child-mapper-resolution case `CompositeMapper` needs.
+  Deliberately does **not** depend on `MyOkapis.ObjectSerialization` — Payment.Message's
+  `ParentMapper.MapValueGroup` (auto-serializing a mapped child into a string) was left out; a
+  consumer who wants that composes it themselves by calling a serializer after `MapChild`.
+- **`MyOkapis.ObjectSerialization`** — `SerializationAttribute`/`ISerializationAttribute` (masking,
+  terminators), `SerializationOptions`/`JsonSerializationOptions`/`XmlSerializationOptions`,
+  `ISerializer`/`SerializerBase<TOptions>`, `FlatTextSerializer` (renamed from
+  `StringMessageSerializer`), `JsonObjectSerializer`, `XmlObjectSerializer`. Depends on
+  `MyOkapis.ObjectAccess` + `MyOkapis.Formatting`. Simpler than Payment.Message's version in one
+  respect: since `MyOkapis.Formatting.Formatter` already applies width/justify/truncation (item 5),
+  `SerializerBase.FormatField` doesn't need Payment.Message's separate `JustifyValue` step.
 
-public interface IAccessibleObject<T> : IAccessibleObject where T : IAccessibleObject<T>
-{
-    static abstract IReadOnlyList<FieldDescriptor> Fields { get; }
-}
-
-// Optional base class for consumers who own their type and want the direct pattern.
-// Delegates to AccessibleObject<T>'s cache instead of re-implementing it.
-public abstract class AccessibleObjectBase<T> : IAccessibleObject<T>
-    where T : AccessibleObjectBase<T>, IAccessibleObject<T>
-{
-    public static IReadOnlyList<FieldDescriptor> Fields => AccessibleObject<T>.Fields;
-    public int FieldCount => Fields.Count;
-    public IEnumerable<FieldDescriptor> FieldDescriptors => Fields;
-}
-```
-
-Do not build this speculatively before that project exists — there's no current consumer to design
-it against, and TemplateEngine itself has no need for polymorphic `IAccessibleObject` collections.
-
-## Explicitly not portable
-- `LrcCalculator` (payment-message checksum utility) — payment-protocol-specific, no analog in a
-  text templating engine.
-- `IJsonMessageSerializer`/`IXmlMessageSerializer`/`JsonSerializationOptions`/
-  `XmlSerializationOptions` — TemplateEngine renders text/HTML, not structured JSON/XML documents;
-  not applicable as-is, though the *general pattern* of explicit options objects is still worth
-  keeping in mind for item 6/7.
+`LrcCalculator` (payment-protocol checksum) remains explicitly not portable — no general analog.

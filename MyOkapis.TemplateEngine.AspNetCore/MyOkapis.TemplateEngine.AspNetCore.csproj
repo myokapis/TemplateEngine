@@ -5,31 +5,36 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>10.0.0</Version>
+    <Version>1.0.0-rc1</Version>
+    <Title>MyOkapis Template Engine - ASP.NET Core</Title>
     <PackageId>MyOkapis.TemplateEngine.AspNetCore</PackageId>
     <AssemblyName>MyOkapis.TemplateEngine.AspNetCore</AssemblyName>
     <RootNamespace>MyOkapis.TemplateEngine.AspNetCore</RootNamespace>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <OutputType>Library</OutputType>
-    <Copyright>Copyright © Gene Graves 2018-2023</Copyright>
+    <Copyright>Copyright © Gene Graves 2018-2026</Copyright>
     <Description>Dependency injection extensions for including MyOkapis.TemplateEngine in Asp.Net Core applications</Description>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/myokapis/TemplateEngine</PackageProjectUrl>
     <RepositoryUrl>https://github.com/myokapis/TemplateEngine</RepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Gene Graves</Authors>
-    <PackageTags>MyOkapis.TemplateEngine</PackageTags>
+    <PackageTags>template aspnetcore dependency-injection web</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <AssemblyVersion>10.0.0.0</AssemblyVersion>
-    <FileVersion>10.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
     <Nullable>enable</Nullable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyOkapis.TemplateEngine\MyOkapis.TemplateEngine.csproj" />
-    <ProjectReference Include="..\MyOkapis.TemplateEngine.Web\MyOkapis.TemplateEngine.Web.csproj" />
+    <PackageReference Include="MyOkapis.TemplateEngine" Version="1.0.0-rc1" />
+    <PackageReference Include="MyOkapis.TemplateEngine.Web" Version="1.0.0-rc1" />
   </ItemGroup>
 
 </Project>

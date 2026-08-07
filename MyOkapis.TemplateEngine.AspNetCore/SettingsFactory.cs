@@ -61,7 +61,7 @@ namespace MyOkapis.TemplateEngine.AspNetCore
         /// </summary>
         /// <param name="configuration">The configuration for this context</param>
         /// <returns>Template Engine settings based on configuration</returns>
-        internal static TemplateEngineSettings GetSettingsFromConfig(IConfiguration configuration)
+        internal static TemplateEngineSettings? GetSettingsFromConfig(IConfiguration configuration)
         {
             // look for the settings in the config
             var configSection = configuration.GetSection(nameof(MyOkapis.TemplateEngine));

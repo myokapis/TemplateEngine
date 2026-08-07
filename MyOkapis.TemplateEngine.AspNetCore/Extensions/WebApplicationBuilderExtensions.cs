@@ -1,4 +1,4 @@
-﻿/* ****************************************************************************
+/* ****************************************************************************
 Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MyOkapis.TemplateEngine.Web;
@@ -27,30 +28,55 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
     public static class WebApplicationBuilderExtensions
     {
         /// <summary>
-        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core
+        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core.
+        /// Presenters descending from MasterPresenterBase are discovered from the calling assembly.
         /// </summary>
         /// <param name="builder">The builder setting up the host in which Template Engine will be used</param>
         /// <returns>A copy of the builder</returns>
-        /// <remarks>Registers presenters that inherit from MasterPresenterBase</remarks>
         public static WebApplicationBuilder UseTemplateEngine(this WebApplicationBuilder builder)
         {
-            builder.UseTemplateEngine<MasterPresenterBase>();
+            builder.UseTemplateEngineCore(Assembly.GetCallingAssembly(), typeof(MasterPresenterBase));
 
             return builder;
         }
 
         /// <summary>
-        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core
+        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core.
+        /// Presenters descending from MasterPresenterBase are discovered from the assembly
+        /// containing <typeparamref name="TAssemblyMarker"/>.
         /// </summary>
-        /// <typeparam name="T">The base type for presenters to be automatically registered</typeparam>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
+        /// <param name="builder">The builder setting up the host in which Template Engine will be used</param>
+        /// <returns>A copy of the builder</returns>
+        public static WebApplicationBuilder UseTemplateEngine<TAssemblyMarker>(this WebApplicationBuilder builder)
+        {
+            builder.UseTemplateEngine<TAssemblyMarker, MasterPresenterBase>();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core.
+        /// Presenters descending from <typeparamref name="TBase"/> are discovered from the assembly
+        /// containing <typeparamref name="TAssemblyMarker"/>.
+        /// </summary>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
+        /// <typeparam name="TBase">The base type for presenters to be automatically registered</typeparam>
         /// <param name="builder">The builder setting up the host in which Template Engine will be used</param>
         /// <returns>A copy of the builder</returns>
         /// <remarks>If caching is configured, then both the template loader and template cache are
         /// set up in DI. This allows presenters to make use of either object for acquiring a template.</remarks>
-        public static WebApplicationBuilder UseTemplateEngine<T>(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder UseTemplateEngine<TAssemblyMarker, TBase>(this WebApplicationBuilder builder)
+        {
+            builder.UseTemplateEngineCore(typeof(TAssemblyMarker).Assembly, typeof(TBase));
+
+            return builder;
+        }
+
+        private static void UseTemplateEngineCore(this WebApplicationBuilder builder, Assembly presenterAssembly, Type presenterBaseType)
         {
             var services = builder.Services;
-            
+
             var settings = SettingsFactory.GetSettingsFromConfig(builder.Configuration) ??
                 SettingsFactory.GetDefaultSettings(builder.Environment);
 
@@ -61,9 +87,7 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
                 services.AddTemplateCache();
 
             services.AddTemplateLoader();
-            services.AddPresenters<T>();
-
-            return builder;
+            services.AddPresenters(presenterAssembly, presenterBaseType);
         }
     }
 }

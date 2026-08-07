@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOkapis.ObjectSerializatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOkapis.ObjectSerialization.Tests", "MyOkapis.ObjectSerialization.Tests\MyOkapis.ObjectSerialization.Tests.csproj", "{68F88CE1-D531-4CEC-AF3B-38F383545234}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOkapis.TemplateEngine.AspNetCore.Tests", "MyOkapis.TemplateEngine.AspNetCore.Tests\MyOkapis.TemplateEngine.AspNetCore.Tests.csproj", "{001A6936-A473-4779-80EE-AB8E89E56970}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -209,6 +211,18 @@ Global
 		{68F88CE1-D531-4CEC-AF3B-38F383545234}.Release|x64.Build.0 = Release|Any CPU
 		{68F88CE1-D531-4CEC-AF3B-38F383545234}.Release|x86.ActiveCfg = Release|Any CPU
 		{68F88CE1-D531-4CEC-AF3B-38F383545234}.Release|x86.Build.0 = Release|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Debug|x64.Build.0 = Debug|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Debug|x86.Build.0 = Debug|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Release|x64.ActiveCfg = Release|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Release|x64.Build.0 = Release|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Release|x86.ActiveCfg = Release|Any CPU
+		{001A6936-A473-4779-80EE-AB8E89E56970}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

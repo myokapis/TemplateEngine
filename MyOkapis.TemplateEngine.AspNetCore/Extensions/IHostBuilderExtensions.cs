@@ -1,4 +1,4 @@
-﻿/* ****************************************************************************
+/* ****************************************************************************
 Copyright 2018-2023 Gene Graves
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 **************************************************************************** */
 
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using MyOkapis.TemplateEngine.Web;
@@ -33,25 +34,46 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
     {
 
         /// <summary>
-        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core
+        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core.
+        /// Presenters descending from MasterPresenterBase are discovered from the calling assembly.
         /// </summary>
         /// <param name="builder">The host builder setting up the host in which Template Engine will be used</param>
         /// <returns>A copy of the host builder</returns>
-        /// <remarks>Registers presenter that inherit from MasterPresenterBase</remarks>
         public static IHostBuilder UseTemplateEngine(this IHostBuilder builder)
         {
-            return builder.UseTemplateEngine<MasterPresenterBase>();
+            return builder.UseTemplateEngineCore(Assembly.GetCallingAssembly(), typeof(MasterPresenterBase));
         }
 
         /// <summary>
-        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core
+        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core.
+        /// Presenters descending from MasterPresenterBase are discovered from the assembly
+        /// containing <typeparamref name="TAssemblyMarker"/>.
         /// </summary>
-        /// <typeparam name="T">The base type for presenters to be automatically registered</typeparam>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
+        /// <param name="builder">The host builder setting up the host in which Template Engine will be used</param>
+        /// <returns>A copy of the host builder</returns>
+        public static IHostBuilder UseTemplateEngine<TAssemblyMarker>(this IHostBuilder builder)
+        {
+            return builder.UseTemplateEngine<TAssemblyMarker, MasterPresenterBase>();
+        }
+
+        /// <summary>
+        /// Sets up configuration and dependency injection for using Template Engine in ASP.Net Core.
+        /// Presenters descending from <typeparamref name="TBase"/> are discovered from the assembly
+        /// containing <typeparamref name="TAssemblyMarker"/>.
+        /// </summary>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
+        /// <typeparam name="TBase">The base type for presenters to be automatically registered</typeparam>
         /// <param name="builder">The host builder setting up the host in which Template Engine will be used</param>
         /// <returns>A copy of the host builder</returns>
         /// <remarks>If caching is configured, then both the template loader and template cache are
         /// set up in DI. This allows presenters to make use of either object for acquiring a template.</remarks>
-        public static IHostBuilder UseTemplateEngine<T>(this IHostBuilder builder)
+        public static IHostBuilder UseTemplateEngine<TAssemblyMarker, TBase>(this IHostBuilder builder)
+        {
+            return builder.UseTemplateEngineCore(typeof(TAssemblyMarker).Assembly, typeof(TBase));
+        }
+
+        private static IHostBuilder UseTemplateEngineCore(this IHostBuilder builder, Assembly presenterAssembly, Type presenterBaseType)
         {
             return builder.ConfigureServices((context, services) =>
             {
@@ -65,7 +87,7 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
                     services.AddTemplateCache();
 
                 services.AddTemplateLoader();
-                services.AddPresenters<T>();
+                services.AddPresenters(presenterAssembly, presenterBaseType);
             });
         }
 

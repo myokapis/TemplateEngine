@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.0.0-rc1</Version>
+    <Version>1.0.0-rc2</Version>
     <Title>MyOkapis Template Engine - ASP.NET Core</Title>
     <PackageId>MyOkapis.TemplateEngine.AspNetCore</PackageId>
     <AssemblyName>MyOkapis.TemplateEngine.AspNetCore</AssemblyName>

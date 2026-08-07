@@ -32,36 +32,68 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
     {
 
         /// <summary>
-        /// Automatically registers all presenters that inherit from MasterPresenterBase
+        /// Automatically registers all presenters that inherit from MasterPresenterBase, found in
+        /// the calling assembly.
         /// </summary>
         /// <param name="services">The DI collection of registered services in which presenters will be registered</param>
         /// <returns>The service collection</returns>
         public static IServiceCollection AddPresenters(this IServiceCollection services)
         {
-            return services.AddPresenters<MasterPresenterBase>();
+            return services.AddPresenters(Assembly.GetCallingAssembly(), typeof(MasterPresenterBase));
         }
 
         /// <summary>
-        /// Automatically registers all presenters that inherit from TBase
+        /// Automatically registers all presenters that inherit from MasterPresenterBase, found in
+        /// the assembly containing <typeparamref name="TAssemblyMarker"/>.
         /// </summary>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
+        /// <param name="services">The DI collection of registered services in which presenters will be registered</param>
+        /// <returns>The service collection</returns>
+        public static IServiceCollection AddPresenters<TAssemblyMarker>(this IServiceCollection services)
+        {
+            return services.AddPresenters<TAssemblyMarker, MasterPresenterBase>();
+        }
+
+        /// <summary>
+        /// Automatically registers all presenters that inherit from <typeparamref name="TBase"/>,
+        /// found in the assembly containing <typeparamref name="TAssemblyMarker"/>.
+        /// </summary>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
         /// <typeparam name="TBase">The base type for presenters to be registered</typeparam>
         /// <param name="services">The DI collection of registered services in which presenters will be registered</param>
         /// <returns>The service collection</returns>
-        public static IServiceCollection AddPresenters<TBase>(this IServiceCollection services)
+        public static IServiceCollection AddPresenters<TAssemblyMarker, TBase>(this IServiceCollection services)
         {
+            return services.AddPresenters(typeof(TAssemblyMarker).Assembly, typeof(TBase));
+        }
 
-            // reflect all classes in assembly to find and add all that implement the base class or interface
-            var baseType = typeof(TBase);
-            var assembly = Assembly.GetEntryAssembly();
-            if (assembly == null) return services;
+        /// <summary>
+        /// Automatically registers all non-abstract subclasses of any of the given base types,
+        /// found in the given assembly, as scoped services.
+        /// </summary>
+        /// <remarks>
+        /// The assembly must be provided explicitly (or resolved from a marker type) rather than
+        /// inferred via <see cref="Assembly.GetEntryAssembly"/>, which only returns useful results
+        /// when the presenter types are compiled directly into the application's actual entry
+        /// assembly -- it returns something else entirely (e.g. the test host, under a unit test
+        /// runner) in every other hosting scenario, silently registering nothing.
+        /// </remarks>
+        /// <param name="services">The DI collection of registered services in which presenters will be registered</param>
+        /// <param name="assembly">The assembly to search for presenter subclasses</param>
+        /// <param name="baseTypes">The base types used in the search</param>
+        /// <returns>The service collection</returns>
+        public static IServiceCollection AddPresenters(this IServiceCollection services, Assembly assembly, params Type[] baseTypes)
+        {
+            ArgumentNullException.ThrowIfNull(assembly);
 
-            // choose only classes and ignore the base class
+            // choose only non-abstract classes that descend from (but aren't themselves) one of the base types
             var subClasses = assembly.GetTypes()
-                .Where(t => t != baseType && t.IsClass && baseType.IsAssignableFrom(t));
-            
-            foreach(var subClass in subClasses)
+                .Where(t => t.IsClass && !t.IsAbstract
+                    && baseTypes.Any(baseType => t != baseType && baseType.IsAssignableFrom(t)));
+
+            foreach (var subClass in subClasses)
             {
-                    services.AddTransient(subClass);
+                services.AddScoped(subClass);
             }
 
             return services;
@@ -76,9 +108,12 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
         {
             services.TryAddSingleton<ITemplateCache<IWebWriter>>(serviceProvider =>
             {
-                var settings = serviceProvider
-                    .GetService<SettingsFactory>()!
-                    .Settings;
+                // Resolve TemplateEngineSettings directly rather than via SettingsFactory.Settings:
+                // SettingsFactory independently recomputes settings from IConfiguration/IHostEnvironment,
+                // which ignores an explicit TemplateEngineSettings instance passed to AddTemplateEngine.
+                // TemplateEngineSettings is always registered first (see AddTemplateSettings), and
+                // reflects whichever settings -- explicit or convention-derived -- were actually chosen.
+                var settings = serviceProvider.GetService<TemplateEngineSettings>()!;
 
                 return new WebTemplateCache(settings.TemplateDirectory);
             });
@@ -95,9 +130,9 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
         {
             services.TryAddSingleton<ITemplateLoader<IWebWriter>>(serviceProvider =>
             {
-                var settings = serviceProvider
-                    .GetService<SettingsFactory>()!
-                    .Settings;
+                // See AddTemplateCache: resolve TemplateEngineSettings directly, not via
+                // SettingsFactory.Settings, so an explicit settings instance is honored.
+                var settings = serviceProvider.GetService<TemplateEngineSettings>()!;
 
                 return new WebLoader(settings.TemplateDirectory);
 
@@ -107,7 +142,8 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
         }
 
         /// <summary>
-        /// Adds the necessary Template Engine classes to dependency injection
+        /// Adds the necessary Template Engine classes to dependency injection. Presenters descending
+        /// from MasterPresenterBase are discovered from the calling assembly.
         /// </summary>
         /// <param name="services">The DI collection of registered services in which template engine classes will be registered</param>
         /// <param name="configuration">The configuration for this context</param>
@@ -116,20 +152,43 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
         public static IServiceCollection AddTemplateEngine(this IServiceCollection services,
             IConfiguration? configuration = null, TemplateEngineSettings? settings = null)
         {
-            services.AddTemplateEngine<MasterPresenterBase>(configuration, settings);
-            return services;
+            return services.AddTemplateEngineCore(Assembly.GetCallingAssembly(), typeof(MasterPresenterBase), configuration, settings);
         }
 
         /// <summary>
-        /// Adds the necessary Template Engine classes to dependency injection
+        /// Adds the necessary Template Engine classes to dependency injection. Presenters descending
+        /// from MasterPresenterBase are discovered from the assembly containing <typeparamref name="TAssemblyMarker"/>.
         /// </summary>
-        /// <typeparam name="T">The base presenter type for which all descendants will be registered</typeparam>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
         /// <param name="services">The DI collection of registered services in which template engine classes will be registered</param>
         /// <param name="configuration">The configuration for this context</param>
         /// <param name="settings">Optional settings to be registered</param>
         /// <returns>The service collection</returns>
-        public static IServiceCollection AddTemplateEngine<T>(this IServiceCollection services,
+        public static IServiceCollection AddTemplateEngine<TAssemblyMarker>(this IServiceCollection services,
+            IConfiguration? configuration = null, TemplateEngineSettings? settings = null)
+        {
+            return services.AddTemplateEngine<TAssemblyMarker, MasterPresenterBase>(configuration, settings);
+        }
+
+        /// <summary>
+        /// Adds the necessary Template Engine classes to dependency injection. Presenters descending
+        /// from <typeparamref name="TBase"/> are discovered from the assembly containing
+        /// <typeparamref name="TAssemblyMarker"/>.
+        /// </summary>
+        /// <typeparam name="TAssemblyMarker">Any type declared in the assembly to be searched for presenters.</typeparam>
+        /// <typeparam name="TBase">The base presenter type for which all descendants will be registered</typeparam>
+        /// <param name="services">The DI collection of registered services in which template engine classes will be registered</param>
+        /// <param name="configuration">The configuration for this context</param>
+        /// <param name="settings">Optional settings to be registered</param>
+        /// <returns>The service collection</returns>
+        public static IServiceCollection AddTemplateEngine<TAssemblyMarker, TBase>(this IServiceCollection services,
             IConfiguration? configuration, TemplateEngineSettings? settings = null)
+        {
+            return services.AddTemplateEngineCore(typeof(TAssemblyMarker).Assembly, typeof(TBase), configuration, settings);
+        }
+
+        private static IServiceCollection AddTemplateEngineCore(this IServiceCollection services,
+            Assembly presenterAssembly, Type presenterBaseType, IConfiguration? configuration, TemplateEngineSettings? settings)
         {
             var settingsInstance = settings;
             services.TryAddSingleton<SettingsFactory>();
@@ -147,7 +206,7 @@ namespace MyOkapis.TemplateEngine.AspNetCore.Extensions
             else
                 services.AddTemplateLoader();
 
-            services.AddPresenters<T>();
+            services.AddPresenters(presenterAssembly, presenterBaseType);
 
             return services;
         }

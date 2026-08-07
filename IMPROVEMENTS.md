@@ -137,3 +137,55 @@ fresh, not copied, with "Payment"/"Message" avoided throughout per the clean-roo
   `SerializerBase.FormatField` doesn't need Payment.Message's separate `JustifyValue` step.
 
 `LrcCalculator` (payment-protocol checksum) remains explicitly not portable — no general analog.
+
+## Fixed: `AddTemplateCache`/`AddTemplateLoader` ignored explicit `TemplateEngineSettings`
+
+Found while adding test coverage for `MyOkapis.TemplateEngine.AspNetCore` (previously untested).
+`IServiceCollectionExtensions.AddTemplateEngine(services, configuration, settings)` let a caller
+pass an explicit `TemplateEngineSettings` instance, which got registered in DI for direct
+injection — but `AddTemplateCache`/`AddTemplateLoader` read settings via
+`serviceProvider.GetService<SettingsFactory>()!.Settings` instead, and `SettingsFactory`
+independently recomputes settings from `IConfiguration`/`IHostEnvironment` with no visibility into
+the explicit instance. So the template cache/loader silently used config/convention-derived
+settings even when a caller explicitly asked for something else. Confirmed empirically (a test
+using an explicit `TemplateDirectory` pointing at a real directory failed with "path does not
+exist" because the loader was actually trying to open `<contentRoot>/Templates` instead). Fixed by
+having both factories resolve `TemplateEngineSettings` directly instead of via
+`SettingsFactory.Settings` — `TemplateEngineSettings` is always registered first via
+`AddTemplateSettings`, and correctly reflects whichever settings were actually chosen. Covered by
+`IServiceCollectionExtensionsTests.TestAddTemplateEngine_ExplicitSettingsAreUsedByTheTemplateLoader`.
+
+## Fixed: `AddPresenters<T>` only found presenters in the app's actual entry assembly
+
+Originally scanned `Assembly.GetEntryAssembly()` for subclasses of `T`, which only works when
+presenters are compiled directly into the actual process entry point (true for `ExampleWebSite`,
+false for any consumer with presenters in a separate class library, and false under `dotnet test`
+itself — `GetEntryAssembly()` returns `testhost`, confirmed empirically before this fix, which is
+exactly why `AddPresenters` was untestable for its actual discovery behavior until now).
+
+Fixed at the `1.0.0-rc1` stage (nothing depending on the old behavior yet, so no need to preserve
+it as a fallback) by threading an explicit assembly parameter through the whole chain:
+`AddPresenters`/`AddTemplateEngine`/`IHostBuilderExtensions.UseTemplateEngine`/
+`WebApplicationBuilderExtensions.UseTemplateEngine` all now have a `<TAssemblyMarker>` generic
+overload (any type declared in the assembly to search), plus a fully explicit
+`AddPresenters(Assembly, params Type[])` for multi-base-type searches. The zero-arg convenience
+overloads use `Assembly.GetCallingAssembly()` instead of `GetEntryAssembly()` — reflects the
+immediate caller one frame up, which is the right assembly for the common case of calling these
+extension methods directly from application startup code (confirmed working against the live
+`ExampleWebsite`, which calls the zero-arg `AddTemplateEngine()`).
+
+This is a breaking change to the generic parameter's meaning: `AddPresenters<T>()`'s single type
+parameter used to mean "the presenter base type" (assembly always implicit/broken); it now means
+"a marker type identifying which assembly to search" (base type defaults to `MasterPresenterBase`,
+or use the two-parameter `AddPresenters<TAssemblyMarker, TBase>()` overload for both explicit).
+
+Two related fixes landed alongside this: discovered subclasses are now filtered with
+`!t.IsAbstract` (previously an abstract intermediate presenter class would be registered and throw
+at DI resolution time trying to instantiate it), and registration lifetime changed from
+`Transient` to `Scoped` (one presenter instance per request, even if resolved multiple times).
+
+Covered by `IServiceCollectionExtensionsTests`: `TestAddPresenters_ZeroArg_FindsSubclassInCallingAssembly`
+(the positive case that was structurally impossible to test before this fix),
+`TestAddPresenters_WithAssemblyMarker_FindsSubclass`,
+`TestAddPresenters_ExplicitAssemblyAndMultipleBaseTypes`,
+`TestAddPresenters_ExcludesAbstractSubclasses`, `TestAddPresenters_RegistersAsScoped`.
